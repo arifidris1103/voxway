@@ -1,0 +1,18 @@
+node_modules/
+dist/
+.DS_Store
+__pycache__/
+*.pyc
+data/
+ml/runs/
+
+# Backups made before big edits
+backup_before_*/
+
+# Third-party reference images: they stay on this computer and aren't published
+cars_design/
+road/
+docs/cars_vs_reference.png
+
+# Personal Claude settings
+.claude/settings.local.json

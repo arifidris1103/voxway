@@ -1,0 +1,21 @@
+{
+  "name": "voxel-av-sim",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Voxel self-driving car simulator: an AV yields to hopping voxel pedestrians, merges and clears intersections.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "assets": "python3 tools/voxgen/build_all.py",
+    "dataset": "node tools/headless/export-dataset.mjs",
+    "evaluate": "node tools/headless/evaluate.mjs"
+  },
+  "dependencies": {
+    "three": "0.186.1"
+  },
+  "devDependencies": {
+    "vite": "8.3.4"
+  }
+}

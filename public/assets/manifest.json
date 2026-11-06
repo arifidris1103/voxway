@@ -1,0 +1,744 @@
+{
+ "assets": {
+  "buildings/office_glass_a": {
+   "category": "building",
+   "file": "vox/buildings/office_glass_a.vox",
+   "footprint": [
+    22.0,
+    22.0
+   ],
+   "label": "Glass office tower A",
+   "tags": {
+    "emit": [
+     5
+    ]
+   },
+   "voxelSize": 0.5
+  },
+  "buildings/office_glass_b": {
+   "category": "building",
+   "file": "vox/buildings/office_glass_b.vox",
+   "footprint": [
+    22.0,
+    22.0
+   ],
+   "label": "Glass office tower B",
+   "tags": {
+    "emit": [
+     5
+    ]
+   },
+   "voxelSize": 0.5
+  },
+  "buildings/office_glass_c": {
+   "category": "building",
+   "file": "vox/buildings/office_glass_c.vox",
+   "footprint": [
+    22.0,
+    22.0
+   ],
+   "label": "Glass office tower C",
+   "tags": {
+    "emit": [
+     5
+    ]
+   },
+   "voxelSize": 0.5
+  },
+  "buildings/resi_redroof_a": {
+   "category": "building",
+   "file": "vox/buildings/resi_redroof_a.vox",
+   "footprint": [
+    40.0,
+    13.0
+   ],
+   "label": "Red-roof residential A",
+   "tags": {
+    "emit": [
+     10
+    ]
+   },
+   "voxelSize": 0.5
+  },
+  "buildings/resi_redroof_b": {
+   "category": "building",
+   "file": "vox/buildings/resi_redroof_b.vox",
+   "footprint": [
+    32.0,
+    13.0
+   ],
+   "label": "Red-roof residential B",
+   "tags": {
+    "emit": [
+     10
+    ]
+   },
+   "voxelSize": 0.5
+  },
+  "buildings/resi_redroof_c": {
+   "category": "building",
+   "file": "vox/buildings/resi_redroof_c.vox",
+   "footprint": [
+    48.0,
+    13.0
+   ],
+   "label": "Red-roof residential C",
+   "tags": {
+    "emit": [
+     10
+    ]
+   },
+   "voxelSize": 0.5
+  },
+  "buildings/resi_redroof_d": {
+   "category": "building",
+   "file": "vox/buildings/resi_redroof_d.vox",
+   "footprint": [
+    36.0,
+    13.0
+   ],
+   "label": "Red-roof residential D",
+   "tags": {
+    "emit": [
+     10
+    ]
+   },
+   "voxelSize": 0.5
+  },
+  "buildings/shops_a": {
+   "category": "building",
+   "file": "vox/buildings/shops_a.vox",
+   "footprint": [
+    30.0,
+    14.0
+   ],
+   "label": "Shop row A",
+   "tags": {
+    "emit": [
+     5,
+     7
+    ],
+    "glass": [
+     2
+    ]
+   },
+   "voxelSize": 0.5
+  },
+  "buildings/shops_b": {
+   "category": "building",
+   "file": "vox/buildings/shops_b.vox",
+   "footprint": [
+    30.0,
+    14.0
+   ],
+   "label": "Shop row B",
+   "tags": {
+    "emit": [
+     5,
+     7
+    ],
+    "glass": [
+     2
+    ]
+   },
+   "voxelSize": 0.5
+  },
+  "buildings/tower_resi_a": {
+   "category": "building",
+   "file": "vox/buildings/tower_resi_a.vox",
+   "footprint": [
+    20.0,
+    15.0
+   ],
+   "label": "Residential tower A",
+   "tags": {
+    "emit": [
+     6
+    ]
+   },
+   "voxelSize": 0.5
+  },
+  "buildings/tower_resi_b": {
+   "category": "building",
+   "file": "vox/buildings/tower_resi_b.vox",
+   "footprint": [
+    20.0,
+    15.0
+   ],
+   "label": "Residential tower B",
+   "tags": {
+    "emit": [
+     6
+    ]
+   },
+   "voxelSize": 0.5
+  },
+  "buildings/tower_resi_c": {
+   "category": "building",
+   "file": "vox/buildings/tower_resi_c.vox",
+   "footprint": [
+    20.0,
+    15.0
+   ],
+   "label": "Residential tower C",
+   "tags": {
+    "emit": [
+     6
+    ]
+   },
+   "voxelSize": 0.5
+  },
+  "cars/classic_red_wing": {
+   "category": "car",
+   "dims": [
+    28,
+    56,
+    16
+   ],
+   "file": "vox/cars/classic_red_wing.vox",
+   "height": 1.2,
+   "label": "Classic red wing",
+   "length": 4.2,
+   "ref": "/cars_design/31801029-88A7-4FAC-8FCE-21278CA7EC8D.jpeg",
+   "refView": [
+    40,
+    22
+   ],
+   "tags": {
+    "brake": [
+     9,
+     10,
+     11
+    ],
+    "emit": [
+     5,
+     9,
+     10,
+     11
+    ],
+    "glass": [
+     4
+    ],
+    "head": [
+     5
+    ]
+   },
+   "voxelSize": 0.075,
+   "width": 1.95
+  },
+  "cars/gt_grey_red_lip": {
+   "category": "car",
+   "dims": [
+    28,
+    58,
+    20
+   ],
+   "file": "vox/cars/gt_grey_red_lip.vox",
+   "height": 1.425,
+   "label": "GT grey red-lip",
+   "length": 4.35,
+   "ref": "/cars_design/C200F790-5909-4E23-8BED-CFDEC5B066A8.jpeg",
+   "refView": [
+    38,
+    16
+   ],
+   "tags": {
+    "brake": [
+     9
+    ],
+    "emit": [
+     8,
+     9
+    ],
+    "glass": [
+     7
+    ],
+    "head": [
+     8
+    ]
+   },
+   "voxelSize": 0.075,
+   "width": 1.95
+  },
+  "cars/gt_white_orange": {
+   "category": "car",
+   "dims": [
+    28,
+    54,
+    20
+   ],
+   "file": "vox/cars/gt_white_orange.vox",
+   "height": 1.425,
+   "label": "GT white-orange",
+   "length": 4.05,
+   "ref": "/cars_design/228AFA34-0D0D-42BF-96B1-F09395B3E7DB.jpeg",
+   "refView": [
+    34,
+    28
+   ],
+   "tags": {
+    "brake": [
+     10
+    ],
+    "emit": [
+     9,
+     10
+    ],
+    "glass": [
+     8
+    ],
+    "head": [
+     9
+    ]
+   },
+   "voxelSize": 0.075,
+   "width": 1.95
+  },
+  "cars/hyper_black_blue": {
+   "category": "car",
+   "dims": [
+    30,
+    60,
+    16
+   ],
+   "file": "vox/cars/hyper_black_blue.vox",
+   "height": 1.2,
+   "label": "Hyper black-blue",
+   "length": 4.5,
+   "ref": "/cars_design/46FDEA09-CFDC-4504-9010-B0800B2945B3_1_105_c.jpeg",
+   "refView": [
+    40,
+    22
+   ],
+   "tags": {
+    "brake": [
+     7
+    ],
+    "emit": [
+     7,
+     8
+    ],
+    "glass": [
+     6
+    ],
+    "head": [
+     8
+    ]
+   },
+   "voxelSize": 0.075,
+   "width": 2.1
+  },
+  "cars/retro_panda_coupe": {
+   "category": "car",
+   "dims": [
+    26,
+    56,
+    20
+   ],
+   "file": "vox/cars/retro_panda_coupe.vox",
+   "height": 1.5,
+   "label": "Retro panda coupe",
+   "length": 4.2,
+   "ref": "/cars_design/3ECE4B01-5428-4DFB-91A3-D72CDAF1544D.jpeg",
+   "refView": [
+    42,
+    24
+   ],
+   "tags": {
+    "brake": [
+     6,
+     7
+    ],
+    "emit": [
+     6,
+     7,
+     8
+    ],
+    "glass": [
+     4
+    ],
+    "head": [
+     8
+    ]
+   },
+   "voxelSize": 0.075,
+   "width": 1.8
+  },
+  "cars/sport_blue_lightbar": {
+   "category": "car",
+   "dims": [
+    26,
+    54,
+    18
+   ],
+   "file": "vox/cars/sport_blue_lightbar.vox",
+   "height": 1.35,
+   "label": "Sport blue light-bar",
+   "length": 4.05,
+   "ref": "/cars_design/D0996A50-4FF5-42CA-8AB3-09D1B6A13260.jpeg",
+   "refView": [
+    38,
+    14
+   ],
+   "tags": {
+    "brake": [
+     9,
+     10
+    ],
+    "emit": [
+     5,
+     9,
+     10
+    ],
+    "glass": [
+     4
+    ],
+    "head": [
+     5
+    ]
+   },
+   "voxelSize": 0.075,
+   "width": 1.8
+  },
+  "cars/super_white_black": {
+   "category": "car",
+   "dims": [
+    28,
+    56,
+    18
+   ],
+   "file": "vox/cars/super_white_black.vox",
+   "height": 1.35,
+   "label": "Super white-black",
+   "length": 4.2,
+   "ref": "/cars_design/A9EBFA39-61BF-44B5-AFC3-6CBB7CF3A551.jpeg",
+   "refView": [
+    36,
+    18
+   ],
+   "tags": {
+    "brake": [
+     8
+    ],
+    "emit": [
+     7,
+     8
+    ],
+    "glass": [
+     6
+    ],
+    "head": [
+     7
+    ]
+   },
+   "voxelSize": 0.075,
+   "width": 1.95
+  },
+  "npcs/npc_bob": {
+   "category": "npc",
+   "file": "vox/npcs/npc_bob.vox",
+   "label": "Bob",
+   "source": "hand-made (npcs/)",
+   "voxelSize": 0.036
+  },
+  "npcs/npc_courier": {
+   "category": "npc",
+   "file": "vox/npcs/npc_courier.vox",
+   "label": "Courier",
+   "source": "generated",
+   "tags": {},
+   "voxelSize": 0.036
+  },
+  "npcs/npc_elder": {
+   "category": "npc",
+   "file": "vox/npcs/npc_elder.vox",
+   "label": "Elder",
+   "source": "generated",
+   "tags": {},
+   "voxelSize": 0.036
+  },
+  "npcs/npc_glasses": {
+   "category": "npc",
+   "file": "vox/npcs/npc_glasses.vox",
+   "label": "Glasses",
+   "source": "hand-made (npcs/)",
+   "voxelSize": 0.036
+  },
+  "npcs/npc_griller": {
+   "category": "npc",
+   "file": "vox/npcs/npc_griller.vox",
+   "label": "Griller",
+   "source": "hand-made (npcs/)",
+   "voxelSize": 0.036
+  },
+  "npcs/npc_hoodie": {
+   "category": "npc",
+   "file": "vox/npcs/npc_hoodie.vox",
+   "label": "Hoodie",
+   "source": "hand-made (npcs/)",
+   "voxelSize": 0.036
+  },
+  "npcs/npc_jogger": {
+   "category": "npc",
+   "file": "vox/npcs/npc_jogger.vox",
+   "label": "Jogger",
+   "source": "generated",
+   "tags": {},
+   "voxelSize": 0.036
+  },
+  "npcs/npc_kid": {
+   "category": "npc",
+   "file": "vox/npcs/npc_kid.vox",
+   "label": "Kid",
+   "source": "generated",
+   "tags": {},
+   "voxelSize": 0.036
+  },
+  "npcs/npc_pony": {
+   "category": "npc",
+   "file": "vox/npcs/npc_pony.vox",
+   "label": "Pony",
+   "source": "hand-made (npcs/)",
+   "voxelSize": 0.036
+  },
+  "npcs/npc_student": {
+   "category": "npc",
+   "file": "vox/npcs/npc_student.vox",
+   "label": "Student",
+   "source": "hand-made (npcs/)",
+   "voxelSize": 0.036
+  },
+  "npcs/npc_worker": {
+   "category": "npc",
+   "file": "vox/npcs/npc_worker.vox",
+   "label": "Worker",
+   "source": "generated",
+   "tags": {},
+   "voxelSize": 0.036
+  },
+  "props/av_kit": {
+   "category": "prop",
+   "file": "vox/props/av_kit.vox",
+   "label": "AV sensor kit",
+   "tags": {
+    "emit": [
+     6
+    ]
+   },
+   "voxelSize": 0.075
+  },
+  "props/barrier": {
+   "category": "prop",
+   "file": "vox/props/barrier.vox",
+   "label": "Roadwork barrier",
+   "tags": {
+    "emit": [
+     4
+    ]
+   },
+   "voxelSize": 0.1
+  },
+  "props/bench": {
+   "category": "prop",
+   "file": "vox/props/bench.vox",
+   "label": "Bench",
+   "tags": {},
+   "voxelSize": 0.1
+  },
+  "props/bin": {
+   "category": "prop",
+   "file": "vox/props/bin.vox",
+   "label": "Bin",
+   "tags": {},
+   "voxelSize": 0.1
+  },
+  "props/bollard": {
+   "category": "prop",
+   "file": "vox/props/bollard.vox",
+   "label": "Bollard",
+   "tags": {},
+   "voxelSize": 0.1
+  },
+  "props/bus_shelter": {
+   "category": "prop",
+   "file": "vox/props/bus_shelter.vox",
+   "label": "Bus shelter",
+   "tags": {
+    "emit": [
+     4
+    ],
+    "glass": [
+     3
+    ]
+   },
+   "voxelSize": 0.1
+  },
+  "props/cone": {
+   "category": "prop",
+   "file": "vox/props/cone.vox",
+   "label": "Traffic cone",
+   "tags": {},
+   "voxelSize": 0.05
+  },
+  "props/flowerbed": {
+   "category": "prop",
+   "file": "vox/props/flowerbed.vox",
+   "label": "Flower bed",
+   "tags": {},
+   "voxelSize": 0.3
+  },
+  "props/gantry": {
+   "category": "prop",
+   "file": "vox/props/gantry.vox",
+   "label": "Sign gantry",
+   "tags": {},
+   "voxelSize": 0.1
+  },
+  "props/ped_signal": {
+   "category": "prop",
+   "file": "vox/props/ped_signal.vox",
+   "label": "Pedestrian signal",
+   "tags": {
+    "ped_stop": [
+     3
+    ],
+    "ped_walk": [
+     4
+    ]
+   },
+   "voxelSize": 0.1
+  },
+  "props/pier": {
+   "category": "prop",
+   "file": "vox/props/pier.vox",
+   "label": "Expressway pier",
+   "tags": {},
+   "voxelSize": 0.25
+  },
+  "props/pier_portal": {
+   "category": "prop",
+   "file": "vox/props/pier_portal.vox",
+   "label": "Flyover portal pier",
+   "tags": {},
+   "voxelSize": 0.25
+  },
+  "props/pier_ramp": {
+   "category": "prop",
+   "file": "vox/props/pier_ramp.vox",
+   "label": "Ramp pier",
+   "tags": {},
+   "voxelSize": 0.25
+  },
+  "props/shrub": {
+   "category": "prop",
+   "file": "vox/props/shrub.vox",
+   "label": "Shrub",
+   "tags": {},
+   "voxelSize": 0.15
+  },
+  "props/sign_roadwork": {
+   "category": "prop",
+   "file": "vox/props/sign_roadwork.vox",
+   "label": "Roadwork sign",
+   "tags": {},
+   "voxelSize": 0.1
+  },
+  "props/signal_mast_long": {
+   "armLength": 11.5,
+   "category": "prop",
+   "file": "vox/props/signal_mast_long.vox",
+   "label": "Signal Mast Long",
+   "tags": {
+    "sig_green": [
+     5
+    ],
+    "sig_red": [
+     3
+    ],
+    "sig_yellow": [
+     4
+    ]
+   },
+   "voxelSize": 0.1
+  },
+  "props/signal_mast_short": {
+   "armLength": 7.0,
+   "category": "prop",
+   "file": "vox/props/signal_mast_short.vox",
+   "label": "Signal Mast Short",
+   "tags": {
+    "sig_green": [
+     5
+    ],
+    "sig_red": [
+     3
+    ],
+    "sig_yellow": [
+     4
+    ]
+   },
+   "voxelSize": 0.1
+  },
+  "props/street_lamp": {
+   "category": "prop",
+   "file": "vox/props/street_lamp.vox",
+   "label": "Street lamp",
+   "tags": {
+    "emit": [
+     4
+    ]
+   },
+   "voxelSize": 0.1
+  },
+  "props/tree_cypress": {
+   "category": "prop",
+   "file": "vox/props/tree_cypress.vox",
+   "label": "Cypress",
+   "tags": {},
+   "voxelSize": 0.15
+  },
+  "props/tree_plane_a": {
+   "category": "prop",
+   "file": "vox/props/tree_plane_a.vox",
+   "label": "Plane tree A",
+   "tags": {},
+   "voxelSize": 0.15
+  },
+  "props/tree_plane_b": {
+   "category": "prop",
+   "file": "vox/props/tree_plane_b.vox",
+   "label": "Plane tree B",
+   "tags": {},
+   "voxelSize": 0.15
+  },
+  "props/tree_plane_c": {
+   "category": "prop",
+   "file": "vox/props/tree_plane_c.vox",
+   "label": "Plane tree C",
+   "tags": {},
+   "voxelSize": 0.15
+  },
+  "props/viaduct_lamp": {
+   "category": "prop",
+   "file": "vox/props/viaduct_lamp.vox",
+   "label": "Expressway lamp",
+   "tags": {
+    "emit": [
+     3
+    ]
+   },
+   "voxelSize": 0.1
+  },
+  "props/warning_triangle": {
+   "category": "prop",
+   "file": "vox/props/warning_triangle.vox",
+   "label": "Warning triangle",
+   "tags": {
+    "emit": [
+     2
+    ]
+   },
+   "voxelSize": 0.04
+  }
+ }
+}
