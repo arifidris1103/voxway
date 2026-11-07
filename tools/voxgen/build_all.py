@@ -6,7 +6,8 @@ Regenerate every MagicaVoxel asset and public/assets/manifest.json.
   python3 tools/voxgen/build_all.py cars:retro_panda_coupe
 
 Hand-edited .vox files are never overwritten unless their generator is named
-explicitly: the NPCs from /npcs are copied, not generated.
+explicitly: the NPCs from /npcs are copied, not generated, and the cars listed in
+HAND_EDITED are skipped by a plain build.
 """
 import os
 import shutil
@@ -20,11 +21,18 @@ from voxlib import Manifest, write_vox  # noqa: E402
 
 PUBLIC = os.path.join(ROOT, 'public', 'assets')
 
+# Cars whose .vox you have edited in MagicaVoxel. A plain build leaves them alone; naming one
+# explicitly (cars:retro_panda_coupe) regenerates it from cars.py and throws the edits away.
+HAND_EDITED = {'retro_panda_coupe'}
+
 
 def build_cars(manifest, only=None):
     import cars
     for fn in cars.BUILDERS:
         if only and fn.__name__ != only:
+            continue
+        if not only and fn.__name__ in HAND_EDITED:
+            print('  car %-22s hand-edited, left as it is' % fn.__name__)
             continue
         car = fn()
         rel = 'vox/cars/%s.vox' % car.name
