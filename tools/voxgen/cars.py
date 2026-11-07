@@ -51,15 +51,21 @@ def retro_panda_coupe():
     W, L, H = 26, 56, 20
     c = Car('retro_panda_coupe', W, L, H, P)
 
-    # ---- body: blunt nose, flat beltline, short rear deck
+    # ---- body: bonnet that climbs to the cowl in terraces, flat beltline, short rear deck
     hw = curve((0, 10.8), (1, 11.6), (3, 12), (52, 12), (54, 11.6), (55, 11.2))
-    zhi = curve((0, 8), (1, 9), (3, 10), (14, 11), (47, 11), (48, 12), (55, 12))
-    c.fill(hw, curve((0, 2), (55, 2)), zhi, white, top_inset=(2, 1))
+    deck = curve((10, 11), (47, 11), (48, 12), (55, 12))
 
-    # ---- greenhouse: raked windshield, roof plateau, long hatch
-    roof = curve((15, 11.6), (24, 19), (34, 19), (48, 12.6))
+    def zhi(y):
+        return 8 if y <= 2 else 9 if y <= 5 else 10 if y <= 9 else deck(y)
+    c.fill(hw, curve((0, 2), (55, 2)), zhi, white, top_inset=(2, 1))
+    # the nose sits a voxel behind a wrap-round bumper, with the air dam tucked in underneath
+    c.clear((c.Y == 0) & ((c.Z >= 6) | (c.Z == 2)))
+    c.fill(lambda y: 11.6, lambda y: 3, lambda y: 5, white, y0=0, y1=1, top_inset=(1,))
+
+    # ---- greenhouse: raked windshield, short roof plateau, liftback glass that runs down to the tail
+    roof = curve((15, 11.6), (24, 19), (31, 19), (53, 13))
     c.fill(lin_hw(11, 10, 12, 19), lambda y: zhi(y) + 1, roof, white, part=CABIN,
-           y0=15, y1=48, top_inset=(2,))
+           y0=15, y1=53, top_inset=(2,))
 
     Y, Z, DX = c.Y, c.Z, c.DX
     cab = c.part == CABIN
@@ -68,28 +74,30 @@ def retro_panda_coupe():
     edge = cab & c.exposed('side')
     c.paint(edge & (Y <= 23), white)                                  # A-pillars
     c.paint(edge & (Y >= 29) & (Y <= 30), white)                      # B-pillars
-    c.paint(edge & (Y + Z >= 57), white)                              # C-pillars
-    c.paint(cab & (Y >= 46), white, surface=True)                     # hatch lip
+    c.paint(edge & (Y + 1.6 * Z >= 68.8), white)                      # C-pillars, raked like the hatch
+    c.paint(cab & (Y >= 53), white, surface=True)                     # hatch lip
+    c.paint(cab & (Y >= 33) & (DX >= 8), white, face='top')            # sail panels frame the hatch glass
 
     # ---- panda split: black lower body, white stripe, black molding
     c.paint(Z <= 5, black, part=BODY)
-    c.paint((Z == 6) & ((Y < 15) | (Y > 42)), black, part=BODY)
-    c.paint((Z == 7) & (Y >= 13) & (Y <= 44), black, part=BODY, face='side')
+    c.paint((Z == 6) & (Y > 42), black, part=BODY)
+    c.paint((Z == 7) & (Y <= 44), black, part=BODY, face='side')       # molding line from the nose back
     c.paint((Y <= 15) & (DX < 10.5), black, part=BODY, face='top')     # black hood
-    c.paint((Y <= 2) & (Z >= 2), black, part=BODY, face=['front', 'top'])
+    c.paint((Y <= 2) & (Z >= 2), black, part=BODY, face='front')
     c.paint((Y >= 53) & (Z >= 8) & (Z <= 11), black, part=BODY, face='rear')
     c.paint((Y >= 53) & (Z == 6), white, part=BODY)
 
     # ---- front details
-    c.sbox(9, 11, 0, 0, 8, 9, amber)                 # indicators wrap the corners
-    c.sbox(11, 11, 1, 2, 8, 9, amber)
-    c.box(12, 13, 0, 0, 8, 8, grey, mirror=False)    # badge
-    c.sbox(4, 6, 0, 1, 1, 2, fog)                    # fog lamps under the bumper
-    c.sbox(0, 11, 0, 0, 4, 4, deep, only_filled=True)
+    c.sbox(0, 11, 0, 0, 4, 4, deep, only_filled=True)    # bumper rub strip
+    c.sbox(9, 10, 1, 1, 6, 6, amber, only_filled=True)   # turn signals ...
+    c.sbox(11, 11, 1, 2, 6, 6, white, only_filled=True)  # ... beside the white stripe that wraps round from the sides
+    c.sbox(8, 9, 1, 1, 8, 8, amber, only_filled=True)    # corner lamps on the bonnet edge
+    c.box(12, 13, 1, 1, 6, 6, grey, mirror=False)        # badge
+    c.sbox(4, 5, 0, 1, 1, 2, fog)                        # fog lamps hanging under the bumper
 
     # ---- rear details
-    c.sbox(5, 9, 55, 55, 9, 10, tail)
-    c.sbox(7, 7, 55, 55, 9, 10, tail_d)
+    c.sbox(7, 9, 55, 55, 9, 10, tail)                  # square tail lamps out at the corners
+    c.sbox(8, 8, 55, 55, 9, 10, tail_d)
     c.sbox(10, 11, 55, 55, 9, 10, amber)
     c.sbox(11, 11, 53, 54, 9, 10, amber)
     c.box(12, 13, 55, 55, 11, 11, grey, mirror=False)  # plate light
@@ -248,37 +256,50 @@ def hyper_black_blue():
     W, L, H = 30, 60, 16
     c = Car('hyper_black_blue', W, L, H, P)
     hw = curve((0, 8.6), (1, 10), (3, 11.6), (6, 13), (10, 14), (21, 14), (25, 13.2), (35, 13.2), (38, 14), (57, 14), (59, 13.2))
-    zhi = curve((0, 4), (2, 5), (8, 6.4), (16, 7.2), (21, 8), (22, 9), (40, 9), (42, 10), (59, 10))
+    zhi = curve((0, 5), (3, 5.6), (8, 6.6), (14, 7.4), (21, 8), (22, 9), (40, 9), (42, 10), (59, 10))
     c.fill(hw, curve((0, 2), (59, 2)), zhi, black, top_inset=(2, 1))
-    c.fill(hw, lambda y: 3, curve((2, 5.6), (8, 8), (14, 9), (21, 9.2)), black, y0=2, y1=21, dx_min=9.0, top_inset=(1,))
+    # front fender blades stand well proud of a low bonnet (which has a raised spine) and
+    # cover the tops of the front wheels
+    fender = curve((1, 6), (3, 7.6), (6, 9.4), (9, 10.6), (10, 11), (16, 11), (19, 10.4), (22, 9.6))
+    flare = curve((1, 10), (3, 11.6), (6, 13), (8, 14), (10, 15), (16, 15), (19, 14.4), (22, 14))
+    c.fill(flare, lambda y: 3, fender, black, y0=1, y1=22, dx_min=8.0, top_inset=(1,))
+    c.fill(lambda y: 8.0, lambda y: 3, lambda y: max(zhi(y), fender(y) - 1.6), black, y0=2, y1=21, dx_min=6.0)
+    c.fill(lambda y: 2.0, lambda y: 3, lambda y: zhi(y) + 1, black, y0=1, y1=20, top_inset=(1,))
     c.fill(hw, lambda y: 3, curve((35, 9.6), (40, 11), (55, 11), (59, 10.6)), black, y0=35, y1=59, dx_min=10.0, top_inset=(1,))
     roof = curve((20, 9.6), (29, 14), (35, 14), (46, 10.6))
     c.fill(lin_hw(11.4, 8.4, 10, 14), lambda y: zhi(y) + 1, roof, black, part=CABIN, y0=20, y1=46, top_inset=(1,))
 
     Y, Z, DX = c.Y, c.Z, c.DX
+    # nose: intakes under the bonnet lip either side of a centre recess with the tow hook
+    c.clear((Y <= 1) & (DX >= 2) & (DX < 8) & (Z >= 2) & (Z <= 4))
+    c.clear((Y == 0) & (DX < 2) & (Z >= 2) & (Z <= 3))
     cab = c.part == CABIN
     c.paint(cab & (Y <= 36), glass, surface=True)
     c.paint(cab & (Z >= 14), black)
     c.paint(cab & c.exposed('side') & (Y <= 28) & (Z >= 11), black)
     c.paint(cab & (Y >= 37) & (Y % 2 == 0) & (DX < 6), black2, face='top')
 
-    # arrow-shaped blue bonnet graphic, white fender edges, blue roof spine
-    c.paint((DX >= 1) & (DX < 4) & (Y >= 2) & (Y <= 19), blue, face='top', part=BODY)
-    c.paint((DX >= 5) & (DX < 7) & (Y >= 9) & (Y <= 19), blue, face='top', part=BODY)
-    c.paint((DX >= 4) & (DX < 5) & (Y >= 6) & (Y <= 10), blue, face='top', part=BODY)
-    for yy in (4, 6, 8):
-        c.paint((DX >= 10) & (DX < 13) & (Y == yy), white, face='top', part=BODY)
-    c.paint((DX >= 12) & (DX < 14) & (Y >= 5) & (Y <= 9), white, face='side', part=BODY)
+    # blue fender blades with white claw marks, blue bonnet panels beside the black spine
+    c.paint((DX >= 6) & (Y <= 21) & (Z >= 6), blue, face='top', part=BODY)
+    c.paint((DX >= 14), black, face='top', part=BODY)
+    c.paint((DX >= 8) & (Y <= 8) & (Z >= 8), blue, face='front', part=BODY)
+    for yy in (6, 9, 12):
+        c.paint((DX >= 11) & (DX < 14) & (Y >= yy) & (Y <= yy + 1) & (DX < 11 + (Y - yy + 1) * 1.5), white, face='top', part=BODY)
+    c.paint((DX >= 2) & (DX < 8) & (Y >= 2) & (Y <= 18), blue, face='top', part=BODY)
+    for yy in (7, 12):
+        c.paint((DX >= 3) & (DX < 7) & (Y == yy + (DX > 5)), black2, face='top', part=BODY)
     c.paint(cab & (DX < 1) & (Y >= 27), blue, face='top')
     c.paint((DX < 1) & (Y >= 46) & (Y <= 52), blue, face='top', part=BODY)
     c.paint((Z == 8) & (Y >= 31) & (Y <= 39), blue, face='side', part=BODY)
     c.sbox(13, 13, 32, 39, 3, 7, black2)
 
-    # nose
-    c.sbox(0, 8, 0, 0, 2, 3, black2)
-    c.box(14, 15, 0, 0, 3, 3, tail, mirror=False)
-    c.sbox(9, 12, 3, 5, 5, 5, head, only_filled=True)
-    c.sbox(0, 12, 0, 2, 1, 1, black2)
+    # intake insides, tow hook, slim lamps on the fender fronts, splitter with end plates
+    c.paint((Y == 2) & (DX >= 2) & (DX < 8) & (Z >= 2) & (Z <= 4), recess)
+    c.paint((Y == 1) & (DX < 2) & (Z >= 2) & (Z <= 3), recess)
+    c.box(14, 15, 1, 1, 3, 3, tail, mirror=False)
+    c.paint((DX >= 8) & (DX < 11) & (Y <= 3) & (Z == 6), head, face='front')
+    c.sbox(0, 12, 0, 3, 1, 1, black2)
+    c.sbox(12, 12, 0, 3, 2, 2, black)
 
     # wing with blue edge and end plates
     c.sbox(5, 5, 54, 56, 11, 13, black2)
