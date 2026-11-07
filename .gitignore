@@ -12,7 +12,6 @@ backup_before_*/
 # Third-party reference images: they stay on this computer and aren't published
 cars_design/
 road/
-docs/cars_vs_reference.png
 
 # Personal Claude settings
 .claude/settings.local.json

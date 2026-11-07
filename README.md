@@ -162,5 +162,5 @@ ml/                    PyTorch training script for the pedestrian predictor
 
 ## Credits
 
-- The car designs are voxel re-creations of the reference renders in `cars_design/` by the voxel artist **@FENRATE**. The real-world car designs belong to their manufacturers. If you publish this project, credit the artist. The reference images are only shown in the local garage and are not part of `npm run build`. They're also kept out of git (see `.gitignore`), together with `docs/cars_vs_reference.png`, which shows them next to the voxel cars.
+- The car designs are voxel re-creations of the reference renders in `cars_design/` by the voxel artist **@FENRATE**. The real-world car designs belong to their manufacturers. If you publish this project, credit the artist. The reference images are only shown in the local garage and are not part of `npm run build`. They're also kept out of git (see `.gitignore`).
 - The NPCs in `npcs/` are your own designs. The road reference photo (`road/`) is a stock image used only as visual reference, and is kept out of git too.
