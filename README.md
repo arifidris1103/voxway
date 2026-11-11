@@ -123,7 +123,7 @@ All assets live in `public/assets/vox/` and are listed in `public/assets/manifes
 
 | Folder | What | Voxel size |
 | --- | --- | --- |
-| `cars/` | 7 cars modelled from `cars_design/` (`body` + `wheel_FL/FR/RL/RR` parts) | 0.075 m |
+| `cars/` | 7 road cars modelled from `cars_design/`, plus 6 open-wheel formula cars in different colour schemes (`body` + `wheel_FL/FR/RL/RR` parts). Keys 1–7 pick a road car for the AV, F cycles through the formula cars | 0.075 m |
 | `npcs/` | your 6 hand-made NPCs (copied from `npcs/`) + 5 new ones (courier, worker, elder, jogger, kid) | 0.036 m |
 | `props/` | lamps, signals, ped signals, trees, cones, barriers, gantry, viaduct / flyover / ramp piers, warning triangle, bus shelter, AV roof kit… | 0.04–0.25 m |
 | `buildings/` | red-roof slabs, residential towers, glass offices, shop rows (stored as hollow shells) | 0.5 m |

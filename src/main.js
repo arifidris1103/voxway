@@ -187,6 +187,8 @@ function attachKit() {
   ego.obj.add(kit);
 }
 
+let formulaIdx = -1;
+
 function setEgoCar(i) {
   const key = CAR_KEYS[i % CAR_KEYS.length];
   const fresh = new Vehicle(assets[key], ego.lane, ego.s);
@@ -364,6 +366,12 @@ addEventListener('keydown', (e) => {
     if (!learned) hud.toast('No model loaded: add ?model=models/ped_mlp.json to the URL');
     else window.sim.setPredictor(planner.custom === learned ? null : learned);
   } else if (k >= '1' && k <= '7') setEgoCar(+k - 1);
+  else if (k === 'f') {
+    // cycle through the formula cars, which follow the 7 road cars in CAR_KEYS
+    const n = CAR_KEYS.length - 7;
+    formulaIdx = (formulaIdx + 1) % n;
+    setEgoCar(7 + formulaIdx);
+  }
 });
 
 main().catch((err) => {

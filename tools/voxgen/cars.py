@@ -4,6 +4,8 @@ Voxel cars, modelled after the reference renders in /cars_design.
 Each builder returns a Car (see carkit.py). Scale: 1 voxel = 0.075 m, so a
 58-voxel car is ~4.35 m long. All cars face -Y (front bumper at y = 0).
 """
+import math
+
 import numpy as np
 
 from carkit import BODY, CABIN, INTERIOR, TRIM, Car, curve, wheel_design
@@ -641,3 +643,226 @@ def gt_white_orange():
 
 BUILDERS = [gt_white_orange, classic_red_wing, retro_panda_coupe, hyper_black_blue,
             super_white_black, gt_grey_red_lip, sport_blue_lightbar]
+
+
+# =============================================================================
+# Open-wheel single-seaters ("formula" cars): one shared shape, six colour schemes.
+# The shape follows the usual breakdown: front wing, nose, monocoque with a halo,
+# sidepods, engine cover with an airbox, floor, rear wing. No headlamps; the red
+# rain light at the back doubles as the brake light.
+# =============================================================================
+
+def _formula(name, label, main, paint, helmet='#f2f2f2', wheel=None, cam='#141518'):
+    wheel = wheel or {}
+    P = Palette()
+    body = P.add('body', main)
+    carbon = P.add('carbon', '#141518')
+    dark = P.add('dark', '#08090b')
+    rain = P.add('rain', '#ff2a2a', 'emit+brake')
+    helm = P.add('helmet', helmet)
+    visor = P.add('visor', '#0d1016')
+    tire = P.add('tire', '#111214')
+    cover = P.add('cover', wheel.get('cover', '#1d1f24'))
+    rings = [P.add('ring%d' % k, col) for k, col in enumerate(wheel.get('ring', []))]
+    dot = P.add('dot', wheel['dot']) if wheel.get('dot') else None
+    camc = P.add('cam', cam)
+
+    W, L, H = 26, 68, 16
+    c = Car(name, W, L, H, P)
+
+    # floor
+    c.fill(curve((16, 4), (22, 10.5), (48, 10.5), (51, 6.5), (58, 6)), lambda y: 1, lambda y: 1, carbon, y0=16, y1=58)
+    # nose and monocoque
+    c.fill(curve((2, 1.5), (10, 2.2), (16, 3.2), (24, 5), (30, 5.5)),
+           curve((2, 3), (8, 3), (14, 2), (30, 2)),
+           curve((2, 3.6), (8, 5), (14, 6.4), (20, 7.4), (30, 7.6)), body, y0=2, y1=30, top_inset=(1,))
+    # sidepods, tapering in towards the rear wheels
+    c.fill(curve((26, 10.5), (40, 10.5), (46, 8), (52, 4.5)), lambda y: 2,
+           curve((26, 7), (34, 7), (44, 5.6), (52, 4)), body, y0=26, y1=52, top_inset=(1,))
+    # engine cover with the airbox behind the driver's head
+    c.fill(curve((30, 3.2), (40, 2.6), (50, 1.6), (58, 1.2)), lambda y: 2,
+           curve((30, 7.6), (32, 12.4), (35, 13), (44, 10.6), (52, 8), (58, 5.5)), body, y0=30, y1=58, top_inset=(1,))
+    # gearbox and rear crash structure
+    c.fill(lambda y: 1.5, lambda y: 2, lambda y: 5, carbon, y0=58, y1=65)
+
+    Y, Z, DX = c.Y, c.Z, c.DX
+    # cockpit, driver and halo
+    c.clear((Y >= 24) & (Y <= 30) & (DX < 2) & (Z >= 6))
+    c.sbox(0, 0, 27, 29, 6, 9, helm)
+    c.sbox(0, 0, 27, 27, 8, 8, visor)
+    c.sbox(2, 2, 25, 31, 9, 9, carbon)
+    c.sbox(0, 2, 24, 24, 9, 9, carbon)
+    c.sbox(0, 0, 23, 23, 8, 9, carbon)
+    c.sbox(4, 5, 24, 24, 8, 8, carbon)                    # mirrors
+    c.paint((Y == 26) & (DX >= 5.5) & (Z >= 3) & (Z <= 5), dark)   # sidepod intakes
+    c.paint((Y >= 31) & (Y <= 32) & (Z >= 10) & (Z <= 11) & (DX < 1), dark, face='front')  # airbox intake
+
+    # front wing: two elements, end plates, pylons under the nose
+    c.sbox(0, 12, 1, 5, 1, 1, carbon)
+    c.sbox(3, 12, 3, 5, 2, 2, carbon)
+    c.sbox(12, 12, 1, 6, 1, 4, carbon)
+    c.sbox(0, 1, 2, 5, 2, 2, carbon)
+    # suspension arms
+    c.sbox(3, 7, 11, 11, 6, 6, carbon)
+    c.sbox(3, 7, 13, 13, 4, 4, carbon)
+    c.sbox(2, 6, 56, 56, 6, 6, carbon)
+    c.sbox(2, 6, 58, 58, 4, 4, carbon)
+    # rear wing between the wheels, on a centre pylon, with a beam wing and diffuser
+    c.sbox(6, 6, 60, 67, 5, 12, carbon)
+    c.sbox(0, 6, 61, 65, 11, 11, carbon)
+    c.sbox(0, 6, 64, 67, 12, 12, carbon)
+    c.sbox(0, 0, 60, 62, 6, 10, carbon)
+    c.sbox(0, 5, 63, 66, 6, 6, carbon)
+    c.sbox(0, 5, 59, 64, 1, 2, dark)
+    c.sbox(0, 0, 66, 66, 3, 5, rain)
+
+    paint(c, P, body, carbon)
+
+    c.paint((Y >= 33) & (Y <= 34) & (Z >= 13), camc)               # camera pod on the airbox
+
+    def rim(py, pz, from_outer, r, ang, R):
+        if r > R - 1.5:
+            return None
+        if from_outer == 0:
+            if rings and r > R - 2.5:               # one colour, or segments round the rim
+                return rings[int((ang + math.pi) / (2 * math.pi) * len(rings)) % len(rings)]
+            if dot and r < 1.0:
+                return dot
+        return cover
+    c.wheel(12, 5, 5, 5, 13, rim, tire, 'F')
+    c.wheel(57, 5, 5, 6, 13, rim, tire, 'R')
+    c.meta = {'label': label}
+    return c
+
+
+def formula_navy_blue():
+    def paint(c, P, body, carbon):
+        Y, Z, DX = c.Y, c.Z, c.DX
+        navy = P.add('navy', '#12239a'); blue = P.add('blue', '#2163f2'); white = P.add('white', '#f4f6fa')
+        orange = P.add('orange', '#f07a1c'); black = P.add('black', '#17181c')
+        # near-black nose -> navy -> royal blue towards the tail
+        c.paint((Y >= 12) & (Y < 17) & ((Y + Z) % 2 == 0), navy, only=body)
+        c.paint(Y >= 17, navy, only=body)
+        c.paint((Y >= 30) & (Y < 36) & (Z >= 4) & ((Y + Z) % 2 == 0), blue, only=navy)
+        c.paint((Y >= 36) & (Z >= 4), blue, only=navy)
+        c.paint((Y >= 26) & (Z <= 3), black, only=[body, navy, blue])
+        side = dict(only=[body, navy, blue], face='side')
+        c.paint((Y >= 14) & (Y <= 20) & (Z == 4) & (Y % 2 == 0), white, **side)        # dashes by the front wheel
+        c.paint((Y >= 27) & (Y <= 28) & (Z == 6), orange, **side)
+        c.paint((Y >= 30) & (Y <= 34) & (Z == 6) & (Y % 2 == 0), white, **side)
+        c.paint((Y >= 38) & (Y <= 46) & (Z == 4) & (Y % 3 != 0), white, **side)        # low on the sidepod
+        c.paint((Y >= 40) & (Y <= 48) & (Z == 8), white, **side)                       # stripe on the engine cover
+        c.paint((Y >= 42) & (Y <= 46) & (Z == 9) & (Y % 2 == 0), white, **side)
+        c.paint((Y == 50) & (Z == 5), orange, **side)
+        c.paint((DX > 6) & (Y >= 60) & (Z >= 7), body, only=carbon)                    # rear wing end plates
+        c.paint((DX > 6) & (Y >= 62) & (Y <= 66) & (Z == 10), white, only=body)
+        c.paint((DX > 12) & (Y <= 6) & (Z >= 2), body, only=carbon)
+    return _formula('formula_navy_blue', 'Formula navy-blue', '#070d3d', paint, helmet='#f4f6fa',
+                    wheel={'cover': '#eef0f4', 'dot': '#d8222a'}, cam='#f07a1c')
+
+
+def formula_blue_pink():
+    def paint(c, P, body, carbon):
+        Y, Z, DX = c.Y, c.Z, c.DX
+        pink = P.add('pink', '#ff8fcf'); white = P.add('white', '#f4f6fa'); black = P.add('black', '#17181c')
+        light = P.add('light', '#5cbcff')
+        c.paint((Y <= 6) & (Z == 2), pink, only=carbon)                                # pink front wing flap and end plates
+        c.paint((DX > 12) & (Y <= 6), pink, only=carbon)
+        c.paint((Y >= 3) & (Y <= 22) & (DX < 1), pink, only=body, face='top')          # stripe along the top of the nose
+        c.paint((Y >= 26) & (Z <= 3), black, only=body)
+        c.paint((Y >= 30) & (Y <= 44) & (Z >= 4) & (Z <= 5), pink, only=body, face='side')   # pink band low on the sidepod
+        c.paint((Y >= 30) & (Y <= 46) & (Z >= 7) & ((Y * 3 + Z * 5) % 4 == 0), light, only=body)   # mottled engine cover
+        c.paint((Y >= 32) & (Y <= 46) & (Z >= 8) & ((Y * 7 + Z * 3) % 9 == 0), white, only=[body, light])
+        c.paint((Y >= 46) & (Y <= 56) & (Z >= 4) & ((Y + Z) % 2 == 0), pink, only=[body, light])   # pink and white tail
+        c.paint((Y >= 46) & (Y <= 56) & (Z >= 4), white, only=[body, light])
+        c.paint((DX > 6) & (Y >= 60) & (Z >= 6), pink, only=carbon)
+        c.paint((DX > 6) & (Y >= 62) & (Y <= 66) & (Z == 9), white, only=pink)
+        c.paint((Y >= 64) & (Z == 12), pink, only=carbon, face='top')
+    return _formula('formula_blue_pink', 'Formula blue-pink', '#1478e8', paint, helmet='#58b8ff',
+                    wheel={'cover': '#eef0f4', 'dot': '#d8222a'})
+
+
+def formula_navy_red():
+    def paint(c, P, body, carbon):
+        Y, Z, DX = c.Y, c.Z, c.DX
+        red = P.add('red', '#e0452a'); yellow = P.add('yellow', '#ffd21f'); white = P.add('white', '#f4f6fa')
+        c.paint(Y <= 4, yellow, only=body)                                             # yellow tip, red band
+        c.paint((Y >= 5) & (Y <= 8), red, only=body)
+        c.paint((Y >= 31) & (Y <= 47) & (Z >= 8), yellow, only=body)                   # yellow engine cover, red centre
+        c.paint((Y >= 35) & (Y <= 43) & (Z >= 10), red, only=yellow)
+        c.paint((Y >= 48) & (Y <= 53) & (Z == 8), yellow, only=body, face='side')
+        c.paint((Y >= 27) & (Y <= 28) & (Z == 3), yellow, only=body, face='side')
+        c.paint((Y == 29) & (Z == 3), red, only=body, face='side')
+        c.paint((Y >= 31) & (Y <= 48) & (Z == 2), red, only=body, face='side')         # thin red line along the floor edge
+        c.paint((Y >= 52) & (Y <= 56) & (Z >= 5) & (Z <= 6), red, only=body, face='side')
+        c.paint((DX > 6) & (Y >= 60) & (Z >= 7), body, only=carbon)
+        c.paint((DX > 6) & (Y >= 63) & (Y <= 66) & (Z >= 10) & (Z <= 11), red, only=body)
+        c.paint((DX > 6) & (Y >= 61) & (Y <= 62) & (Z == 8), white, only=body)
+        c.paint((DX > 12) & (Y <= 6) & (Z >= 3), yellow, only=carbon)
+    return _formula('formula_navy_red', 'Formula navy-red', '#101a44', paint, helmet='#ffd21f',
+                    wheel={'ring': ['#d8222a']}, cam='#ffd21f')
+
+
+def formula_silver_teal():
+    def paint(c, P, body, carbon):
+        Y, Z, DX = c.Y, c.Z, c.DX
+        black = P.add('black', '#17181c'); teal = P.add('teal', '#17d1bd'); white = P.add('white', '#ffffff')
+        c.paint((Y >= 26) & (Z <= 5), black, only=body)                                # black sidepods and floor edge
+        c.paint((Y >= 40) & (Y < 48) & ((Y + Z) % 2 == 0), black, only=body)           # chequered fade to a black tail
+        c.paint(Y >= 48, black, only=body)
+        side = dict(only=[body, black], face='side')
+        c.paint((Y >= 8) & (Y <= 25) & (Z == 5), teal, **side)                         # teal line from the nose ...
+        c.paint((Y >= 26) & (Y <= 46) & (Z == 3), teal, **side)                        # ... along the sidepod, rising at the back
+        c.paint((Y >= 47) & (Y <= 52) & (Z == 4), teal, **side)
+        c.paint((Y >= 34) & (Y <= 42) & (Z == 5), white, **side)
+        c.paint((Y >= 30) & (Y <= 38) & (Z >= 9), white, only=body, face='top')
+        c.paint((DX > 12) & (Y <= 6) & (Z >= 3), teal, only=carbon)
+        c.paint((DX > 6) & (Y >= 62) & (Y <= 66) & (Z == 10), white, only=carbon)
+    return _formula('formula_silver_teal', 'Formula silver-teal', '#d4d9df', paint, helmet='#ffe23a',
+                    wheel={'dot': '#17d1bd', 'ring': ['#3a3d44']})
+
+
+def formula_papaya():
+    def paint(c, P, body, carbon):
+        Y, Z, DX = c.Y, c.Z, c.DX
+        black = P.add('black', '#1b1c20')
+        c.paint((Y >= 16) & (Z <= 3), black, only=body)
+        c.paint((Y >= 18) & (Y <= 25) & (Z == 3) & (Y % 2 == 0), body, only=black, face='side')   # papaya dashes on the black chin
+        c.paint((Y >= 23) & (Y <= 31) & (Z >= 6), black, only=body, face='side')       # black round the cockpit
+        c.paint((Y >= 28) & (Y <= 45) & (Z <= 6) & (Y + Z <= 49), black, only=body, face='side')  # black sidepod; papaya sweeps in from the tail
+        c.paint((Y >= 30) & (Y <= 40) & (Z >= 11), black, only=body)                   # black airbox
+        c.paint((Y >= 52) & (Z <= 4), black, only=body)
+        c.paint((DX > 12) & (Y <= 6) & (Z >= 2), body, only=carbon)                    # papaya wing tips
+        c.paint((Y >= 3) & (Y <= 5) & (Z == 2) & (DX > 7), body, only=carbon)
+        c.paint((DX > 6) & (Y >= 60) & (Z >= 9), body, only=carbon)
+        c.paint((DX > 6) & (Y >= 63) & (Y <= 66) & (Z == 10), black, only=body)
+    return _formula('formula_papaya', 'Formula papaya', '#ff8f1a', paint, helmet='#f4f6fa',
+                    wheel={'ring': ['#ffd21f', '#d8222a', '#2340d8', '#27a844']})
+
+
+def formula_red():
+    def paint(c, P, body, carbon):
+        Y, Z, DX = c.Y, c.Z, c.DX
+        white = P.add('white', '#f4f6fa'); deep = P.add('deepred', '#8e0a10'); yellow = P.add('yellow', '#ffd21f')
+        black = P.add('black', '#17181c')
+        c.paint((Y >= 26) & (Z <= 2), black, only=body)
+        c.paint((Y >= 40) & (Z >= 7) & ((Y + Z) % 2 == 0) & (Y < 44), deep, only=body)  # darker red over the engine cover
+        c.paint((Y >= 44) & (Z >= 7), deep, only=body)
+        c.paint((Y >= 31) & (Z >= 12), deep, only=body)
+        side = dict(only=[body, deep], face='side')
+        c.paint((Y >= 16) & (Y <= 20) & (Z == 4), white, **side)
+        c.paint((Y >= 28) & (Y <= 29) & (Z >= 4) & (Z <= 5), yellow, **side)
+        c.paint((Y >= 32) & (Y <= 36) & (Z == 5), white, **side)
+        c.paint((Y >= 39) & (Y <= 40) & (Z >= 3) & (Z <= 4), yellow, **side)
+        c.paint((Y >= 43) & (Y <= 50) & (Z == 4) & (Y % 3 != 0), white, **side)
+        c.paint((Y >= 38) & (Y <= 44) & (Z == 8), white, **side)
+        c.paint((Y <= 2) & (DX < 2) & (Z == 1), white, only=carbon)                    # white tip on the front wing
+        c.paint((DX > 12) & (Y <= 6) & (Z >= 3), body, only=carbon)
+        c.paint((DX > 6) & (Y >= 62) & (Y <= 66) & (Z == 10), white, only=carbon)
+        c.paint((Y >= 64) & (Z == 12), body, only=carbon, face='top')
+    return _formula('formula_red', 'Formula red', '#d6101a', paint, helmet='#ffd21f',
+                    wheel={'ring': ['#ffd21f']}, cam='#23b7c9')
+
+
+FORMULA = [formula_navy_blue, formula_blue_pink, formula_navy_red, formula_silver_teal, formula_papaya, formula_red]
+BUILDERS += FORMULA

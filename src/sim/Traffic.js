@@ -11,6 +11,9 @@ import { random } from './Random.js';
 export const CAR_KEYS = [
   'cars/gt_white_orange', 'cars/classic_red_wing', 'cars/retro_panda_coupe', 'cars/hyper_black_blue',
   'cars/super_white_black', 'cars/gt_grey_red_lip', 'cars/sport_blue_lightbar',
+  // open-wheel formula cars (keep these last: main.js cycles through them with F)
+  'cars/formula_navy_blue', 'cars/formula_blue_pink', 'cars/formula_navy_red',
+  'cars/formula_silver_teal', 'cars/formula_papaya', 'cars/formula_red',
 ];
 
 const LOOKAHEAD = 70;

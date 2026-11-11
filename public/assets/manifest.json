@@ -226,6 +226,138 @@
    "voxelSize": 0.075,
    "width": 1.95
   },
+  "cars/formula_blue_pink": {
+   "category": "car",
+   "dims": [
+    26,
+    68,
+    16
+   ],
+   "file": "vox/cars/formula_blue_pink.vox",
+   "height": 1.05,
+   "label": "Formula blue-pink",
+   "length": 5.1,
+   "tags": {
+    "brake": [
+     4
+    ],
+    "emit": [
+     4
+    ]
+   },
+   "voxelSize": 0.075,
+   "width": 1.8
+  },
+  "cars/formula_navy_blue": {
+   "category": "car",
+   "dims": [
+    26,
+    68,
+    16
+   ],
+   "file": "vox/cars/formula_navy_blue.vox",
+   "height": 1.05,
+   "label": "Formula navy-blue",
+   "length": 5.1,
+   "tags": {
+    "brake": [
+     4
+    ],
+    "emit": [
+     4
+    ]
+   },
+   "voxelSize": 0.075,
+   "width": 1.8
+  },
+  "cars/formula_navy_red": {
+   "category": "car",
+   "dims": [
+    26,
+    68,
+    16
+   ],
+   "file": "vox/cars/formula_navy_red.vox",
+   "height": 1.05,
+   "label": "Formula navy-red",
+   "length": 5.1,
+   "tags": {
+    "brake": [
+     4
+    ],
+    "emit": [
+     4
+    ]
+   },
+   "voxelSize": 0.075,
+   "width": 1.8
+  },
+  "cars/formula_papaya": {
+   "category": "car",
+   "dims": [
+    26,
+    68,
+    16
+   ],
+   "file": "vox/cars/formula_papaya.vox",
+   "height": 1.05,
+   "label": "Formula papaya",
+   "length": 5.1,
+   "tags": {
+    "brake": [
+     4
+    ],
+    "emit": [
+     4
+    ]
+   },
+   "voxelSize": 0.075,
+   "width": 1.8
+  },
+  "cars/formula_red": {
+   "category": "car",
+   "dims": [
+    26,
+    68,
+    16
+   ],
+   "file": "vox/cars/formula_red.vox",
+   "height": 1.05,
+   "label": "Formula red",
+   "length": 5.1,
+   "tags": {
+    "brake": [
+     4
+    ],
+    "emit": [
+     4
+    ]
+   },
+   "voxelSize": 0.075,
+   "width": 1.8
+  },
+  "cars/formula_silver_teal": {
+   "category": "car",
+   "dims": [
+    26,
+    68,
+    16
+   ],
+   "file": "vox/cars/formula_silver_teal.vox",
+   "height": 1.05,
+   "label": "Formula silver-teal",
+   "length": 5.1,
+   "tags": {
+    "brake": [
+     4
+    ],
+    "emit": [
+     4
+    ]
+   },
+   "voxelSize": 0.075,
+   "width": 1.8
+  },
   "cars/gt_grey_red_lip": {
    "category": "car",
    "dims": [
