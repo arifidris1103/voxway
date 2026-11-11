@@ -78,7 +78,8 @@ async function main() {
     scene,
     seed: +(params.get('seed') || 0),
     cars: +(params.get('cars') || 76),
-    hwy: +(params.get('hwy') || 72),
+    hwy: +(params.get('hwy') || 28),
+    fly: +(params.get('fly') || 90),
     peds: +(params.get('peds') || 90),
     crashes: params.has('crashes') ? +params.get('crashes') : 0.8,   // traffic accidents per minute, 0 = off
     car: +(params.get('car') || 7),

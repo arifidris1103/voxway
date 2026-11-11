@@ -22,19 +22,20 @@ export const STEP = 1 / 60;
  * @param {THREE.Scene} [o.scene]  scene to build into (a bare Scene when headless)
  * @param {number} [o.seed]        random seed; 0 / missing = a random one (see sim.seed)
  * @param {number} [o.cars]        ground traffic
- * @param {number} [o.hwy]         expressway traffic
+ * @param {number} [o.hwy]         traffic on the lower viaduct
+ * @param {number} [o.fly]         traffic on the upper flyover and its ramps
  * @param {number} [o.peds]        pedestrians
  * @param {number} [o.crashes]     traffic accidents per minute (0 = off)
  * @param {number} [o.car]         the AV's car, 1-7
  */
 export async function createSimulation({
-  scene = new THREE.Scene(), seed = 0, cars = 76, hwy = 72, peds: pedCount = 90, crashes = 0.8, car = 7,
+  scene = new THREE.Scene(), seed = 0, cars = 76, hwy = 28, fly = 90, peds: pedCount = 90, crashes = 0.8, car = 7,
 } = {}) {
   const usedSeed = seedRandom(seed);
   const net = new RoadNetwork(7);
   const world = await buildWorld(scene, net);
   const assets = await loadAssets([...CAR_KEYS, ...NPC_KEYS, 'props/av_kit', 'props/warning_triangle']);
-  const traffic = new Traffic(scene, net, assets, { ground: cars, viaduct: hwy });
+  const traffic = new Traffic(scene, net, assets, { ground: cars, viaduct: hwy, flyover: fly });
   const peds = new Pedestrians(scene, net, assets, { count: pedCount });
   traffic.peds = peds;
   peds.spawnAll(world.blocks);

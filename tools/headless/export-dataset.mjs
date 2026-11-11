@@ -15,7 +15,7 @@
 //                          AV speed
 //   info.json              feature names, codes and settings
 // Options: --seeds 1-8  --minutes 5  --every 1 (s between samples)  --warmup 20 (s)  --out data/peds
-//          --crashes 0.8  --cars 76  --hwy 72  --peds 90  --jobs N (parallel seeds)
+//          --crashes 0.8  --cars 76  --hwy 28  --fly 90  --peds 90  --jobs N (parallel seeds)
 //          --womd 30  also save a full Waymo-Open-Motion-style scene every 30 s (womd/*.json)
 
 import fs from 'node:fs';
@@ -25,7 +25,7 @@ import { parseArgs, parseSeeds, writeNpy, runPool, childTask } from './cli.mjs';
 
 const HERE = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(HERE), '../..');
-const DEFAULTS = { seeds: '1-8', minutes: 5, every: 1, warmup: 20, out: 'data/peds', crashes: 0.8, cars: 76, hwy: 72, peds: 90, jobs: 0, womd: 0 };
+const DEFAULTS = { seeds: '1-8', minutes: 5, every: 1, warmup: 20, out: 'data/peds', crashes: 0.8, cars: 76, hwy: 28, fly: 90, peds: 90, jobs: 0, womd: 0 };
 export const STATES = ['walk', 'idle', 'watch', 'wait', 'cross', 'jaywait', 'jaycross', 'park', 'work'];
 const META = ['seed', 'time', 'ped_id', 'hopper', 'state', 'on_road', 'enters_road', 'dist_to_av', 'av_speed'];
 
@@ -56,7 +56,7 @@ async function main() {
 async function exportSeed(o) {
   const { createSimulation } = await import('./node-sim.mjs');
   const { pedFeatures, jumped, toLocal, HIST, FUT_DT, FUT_N, N_FEATURES, FEATURE_NAMES, FEATURE_VERSION } = await import('../../src/sim/PedFeatures.js');
-  const sim = await createSimulation({ seed: o.seed, crashes: o.crashes, cars: o.cars, hwy: o.hwy, peds: o.peds });
+  const sim = await createSimulation({ seed: o.seed, crashes: o.crashes, cars: o.cars, hwy: o.hwy, fly: o.fly, peds: o.peds });
   const H = sim.planner.history;
   const ctx = { crosswalks: sim.net.crosswalks, vehicles: sim.traffic.vehicles, onRoad: (x, z) => sim.peds.onRoad(x, z) };
   const every = Math.max(1, Math.round(o.every * 10));      // in 10 Hz ticks
@@ -155,7 +155,7 @@ async function exportSeed(o) {
     seed: o.seed, samples: N, simulated_seconds: +sim.time.toFixed(1), sample_every_s: every / 10, warmup_s: o.warmup,
     feature_version: FEATURE_VERSION, features: FEATURE_NAMES, history_steps: HIST, future_dt: FUT_DT, future_steps: FUT_N,
     meta_columns: META, state_codes: STATES, frame: 'pedestrian frame: a = metres ahead (the way it faces), b = metres to its right',
-    settings: { cars: o.cars, hwy: o.hwy, peds: o.peds, crashes: o.crashes },
+    settings: { cars: o.cars, hwy: o.hwy, fly: o.fly, peds: o.peds, crashes: o.crashes },
     av_stats: sim.planner.stats, created: new Date().toISOString(),
   }, null, 1));
   if (process.send) process.send({ seed: o.seed, done: true, samples: N });

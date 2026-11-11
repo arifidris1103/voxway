@@ -16,6 +16,9 @@ export const CAR_KEYS = [
   'cars/formula_silver_teal', 'cars/formula_papaya', 'cars/formula_red',
 ];
 
+/** Which traffic budget a lane counts towards: the streets, the lower viaduct, or the upper flyover with its ramps. */
+const zoneOf = (lane) => (!lane.elevated ? 'ground' : lane.kind === 'ramp' || lane.y > 15 ? 'flyover' : 'viaduct');
+
 const LOOKAHEAD = 70;
 const smooth = (u) => u * u * (3 - 2 * u);
 let VID = 1;
@@ -118,11 +121,11 @@ export function idm(v, v0, gap, dv, veh) {
 }
 
 export class Traffic {
-  constructor(scene, net, assets, { ground = 70, viaduct = 52 } = {}) {
+  constructor(scene, net, assets, { ground = 70, viaduct = 28, flyover = 90 } = {}) {
     this.scene = scene;
     this.net = net;
     this.assets = assets;
-    this.target = { ground, viaduct };
+    this.target = { ground, viaduct, flyover };
     this.vehicles = [];
     this.group = new THREE.Group();
     this.group.name = 'traffic';
@@ -156,11 +159,15 @@ export class Traffic {
   // ------------------------------------------------------------ population
   populate() {
     const roadLanes = this.net.lanes.filter((l) => l.kind === 'road' && l.length > 40);
-    const viaLanes = this.net.lanes.filter((l) => l.kind === 'viaduct' && l.length > 40);
+    const viaLanes = this.net.lanes.filter((l) => l.kind === 'viaduct' && l.length > 40 && zoneOf(l) === 'viaduct');
+    const flyLanes = this.net.lanes.filter((l) => l.kind === 'viaduct' && l.length > 40 && zoneOf(l) === 'flyover');
     const place = (lanes, n) => {
+      const total = lanes.reduce((a, l) => a + l.length, 0);
       let tries = 0;
       while (n > 0 && tries++ < n * 30) {
-        const lane = lanes[Math.floor(random() * lanes.length)];
+        // longer lanes get proportionally more cars
+        let r = random() * total, lane = lanes[0];
+        for (const l of lanes) { r -= l.length; if (r <= 0) { lane = l; break; } }
         const s = 10 + random() * (lane.length - 20);
         if (lane.closed && s > lane.closed.s0 - lane.closed.taper - 10 && s < lane.closed.s1 + 5) continue;
         if (this.vehicles.some((v) => v.lane === lane && Math.abs(v.s - s) < 12)) continue;
@@ -170,14 +177,15 @@ export class Traffic {
     };
     place(roadLanes, this.target.ground);
     place(viaLanes, this.target.viaduct);
+    place(flyLanes, this.target.flyover);
   }
 
   spawnAtEntries(dt) {
-    let ground = 0, via = 0;
-    for (const v of this.vehicles) if (!v.isEgo) (v.lane.elevated ? via++ : ground++);
+    const n = { ground: 0, viaduct: 0, flyover: 0 };
+    for (const v of this.vehicles) if (!v.isEgo) n[zoneOf(v.lane)]++;
     for (const lane of this.net.entries) {
-      const isVia = lane.elevated;
-      if (isVia ? via >= this.target.viaduct : ground >= this.target.ground) continue;
+      const zone = zoneOf(lane), isVia = lane.elevated;
+      if (n[zone] >= this.target[zone]) continue;
       const t = (this.spawnClock.get(lane) || 0) - dt;
       if (t > 0) { this.spawnClock.set(lane, t); continue; }
       const first = (this.occ.get(lane) || [])[0];
@@ -185,9 +193,9 @@ export class Traffic {
       const v0 = first ? Math.min(lane.speed * 0.8, first.veh.v + 3) : lane.speed * 0.8;
       if (first && first.s < 14 + (v0 * v0) / (2 * 3)) { this.spawnClock.set(lane, 0.5); continue; }
       this.add(new Vehicle(this.randomAsset(), lane, 0, { v: v0 }));
-      isVia ? via++ : ground++;
+      n[zone]++;
       this.stats.spawned++;
-      this.spawnClock.set(lane, (isVia ? 2.5 : 5) + random() * (isVia ? 3 : 7));
+      this.spawnClock.set(lane, (zone === 'flyover' ? 1.6 : isVia ? 2.5 : 5) + random() * (zone === 'flyover' ? 2.4 : isVia ? 3 : 7));
     }
   }
 
