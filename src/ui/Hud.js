@@ -4,7 +4,7 @@ import { LAYOUT, roadHalfWidth } from '../world/RoadNetwork.js';
 
 const BADGE = {
   CRUISE: '#34e3a0', FOLLOW: '#7cc4ff', TURN: '#7cc4ff', MERGE: '#ffb02e', CAUTION: '#ffb02e',
-  YIELD: '#ff5a3c', 'STOP · SIGNAL': '#ff5a3c', 'AVOID · CRASH': '#c061ff',
+  YIELD: '#ff5a3c', 'STOP · SIGNAL': '#ff5a3c', 'AVOID · CRASH': '#c061ff', 'GIVE WAY': '#ffb02e',
 };
 
 export class Hud {

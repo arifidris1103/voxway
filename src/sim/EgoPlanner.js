@@ -302,6 +302,7 @@ export class EgoPlanner {
     if (r === 'accident ahead' || veh.avoiding) st = 'AVOID · CRASH';
     else if (r.startsWith('yield') || r.startsWith('caution')) st = r.startsWith('yield') ? 'YIELD' : 'CAUTION';
     else if (r === 'red light' || r === 'yellow') st = 'STOP · SIGNAL';
+    else if (r === 'oncoming traffic') st = 'GIVE WAY';
     else if (r === 'yield crosswalk' || r === 'pedestrian in lane') st = 'YIELD';
     else if (r.startsWith('merge') || veh.lc || veh.wantsLane) st = 'MERGE';
     else if (r === 'following' || r === 'queue' || r === 'letting merge' || r === 'junction busy') st = 'FOLLOW';
@@ -309,6 +310,7 @@ export class EgoPlanner {
     if (st !== this._prevState) {
       if (st === 'YIELD') this.stats.pedYields++;
       if (st === 'STOP · SIGNAL') this.stats.redStops++;
+      if (st === 'GIVE WAY') this.stats.giveWays = (this.stats.giveWays || 0) + 1;
       if (st === 'AVOID · CRASH') this.stats.crashScenes++;
       if (this._prevState === 'MERGE' && !veh.lc) this.stats.merges++;
       this._prevState = st;
@@ -384,7 +386,7 @@ class EgoViz {
     if (!show) return;
     const y0 = veh.pose.y + 0.06;
     // ribbon colour reflects the decision
-    const col = plan.state === 'YIELD' || plan.state === 'STOP · SIGNAL' ? 0xff5a3c : plan.state === 'AVOID · CRASH' ? 0xc061ff : plan.state === 'CAUTION' || plan.state === 'MERGE' ? 0xffb02e : 0x34e3a0;
+    const col = plan.state === 'YIELD' || plan.state === 'STOP · SIGNAL' ? 0xff5a3c : plan.state === 'AVOID · CRASH' ? 0xc061ff : plan.state === 'CAUTION' || plan.state === 'MERGE' || plan.state === 'GIVE WAY' ? 0xffb02e : 0x34e3a0;
     this.c.setHex(col);
     const pos = this.ribbonGeo.attributes.position.array;
     const cl = this.ribbonGeo.attributes.color.array;

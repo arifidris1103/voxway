@@ -52,9 +52,13 @@ export class ScenarioRecorder {
     const signals = [];
     for (const l of this.net.lanes) {
       if (!l.signal) continue;
-      const st = l.signal.inter.signal.state(l.signal.group);
+      const sig = l.signal.inter.signal;
+      const st = sig.state(l.signal.group);
       const p0 = l.pts[0];
-      signals.push({ lane: l.id, state: (l.movement === 'left' ? STATE.arrow : STATE.plain)[st], stop_point: { x: p0.x, y: -p0.z, z: l.y } });
+      // a left turn lane follows its arrow during the arrow phase, otherwise the road's plain
+      // light (green there = permissive: go when there is a gap)
+      const state = l.movement !== 'left' ? STATE.plain[st] : st !== 0 ? STATE.arrow[st] : STATE.plain[sig.state(l.signal.group.replace(/L$/, ''))];
+      signals.push({ lane: l.id, state, stop_point: { x: p0.x, y: -p0.z, z: l.y } });
     }
     // pedestrian walk lights (not in WOMD; 0 = don't walk, 1 = flashing, 2 = walk)
     const walks = this.net.crosswalks.map((c) => ({ crosswalk: 50000 + c.id, walk: c.walk() }));

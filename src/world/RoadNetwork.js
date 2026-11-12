@@ -77,6 +77,14 @@ export class Lane {
       this.cum.push(this.cum[i - 1] + Math.hypot(pts[i].x - pts[i - 1].x, pts[i].z - pts[i - 1].z));
     }
     this.length = this.cum[this.cum.length - 1];
+    // direction at each point: the average of the two pieces meeting there. sample() blends between
+    // them, so a car's heading turns smoothly along a curve instead of jumping at every point.
+    const dir = (i) => { const a = pts[i - 1], b = pts[i], L = Math.hypot(b.x - a.x, b.z - a.z) || 1; return [(b.x - a.x) / L, (b.z - a.z) / L]; };
+    this.tan = pts.map((_, i) => {
+      const u = i > 0 ? dir(i) : null, w = i < pts.length - 1 ? dir(i + 1) : null;
+      const [x, z] = u && w ? [u[0] + w[0], u[1] + w[1]] : u || w;
+      return Math.atan2(x, z);
+    });
   }
 
   /** Position and unit tangent at arc length s (clamped). */
@@ -94,7 +102,9 @@ export class Lane {
     out.z = a.z + (b.z - a.z) * t;
     out.hx = (b.x - a.x) / seg;
     out.hz = (b.z - a.z) / seg;
-    out.heading = Math.atan2(out.hx, out.hz);
+    const h0 = this.tan[i - 1], dh = Math.atan2(Math.sin(this.tan[i] - h0), Math.cos(this.tan[i] - h0));
+    const h = h0 + dh * t;
+    out.heading = Math.atan2(Math.sin(h), Math.cos(h));
     out.y = this.yProfile ? this.yProfile(s / this.length) : this.y;
     return out;
   }
@@ -254,6 +264,17 @@ export class SignalController {
   /** Seconds until this group's green ends (Infinity if not green). */
   remaining() { return this.phases[this.idx].dur - this.tIn; }
 
+  /** Seconds until the cross road gets a green (`base` is our road's group, 'NS' or 'EW'). */
+  timeToCrossGreen(base) {
+    let t = 0;
+    for (let k = 0; k < this.phases.length; k++) {
+      const p = this.phases[(this.idx + k) % this.phases.length];
+      if (Object.entries(p.g).some(([g, st]) => st === SIG.GREEN && !g.startsWith(base))) break;
+      t += k === 0 ? p.dur - this.tIn : p.dur;
+    }
+    return t;
+  }
+
   walk(leg) {
     const p = this.phases[this.idx];
     if (!p.walk || !p.walk.includes(leg)) return WALK.DONT;
@@ -373,6 +394,9 @@ export class RoadNetwork {
             const p3 = dep.pts[0];
             const pts = mv === 'straight' ? [p0, p3] : bezier(p0, f, p3, fo);
             const con = this.addLane(pts, { kind: 'connector', dir: dn, index: i, movement: mv, speed: mv === 'straight' ? ap.speed : 6.5 });
+            // the curve's true directions at its ends, so a car's heading doesn't jump entering or leaving a turn
+            con.tan[0] = Math.atan2(f.x, f.z);
+            con.tan[con.tan.length - 1] = Math.atan2(fo.x, fo.z);
             con.signal = { inter: I, group: mv === 'left' ? group + 'L' : group };
             con.inter = I;
             ap.next.push(con); con.prev.push(ap);
@@ -388,6 +412,12 @@ export class RoadNetwork {
     this.buildClosure();
     this.buildWalkGraph();
     this.computeConflicts();
+    // ramps leave and join straight decks and roads: start and end exactly along them
+    for (const l of this.lanes) {
+      if (l.kind !== 'ramp') continue;
+      if (l.prev.length) l.tan[0] = l.prev[0].tan[l.prev[0].tan.length - 1];
+      if (l.next.length) l.tan[l.tan.length - 1] = l.next[0].tan[0];
+    }
     this.entries = this.lanes.filter((l) => l.kind !== 'connector' && l.prev.length === 0);
   }
 

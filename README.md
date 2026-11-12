@@ -13,9 +13,10 @@ npm run dev        # http://localhost:5173  (simulator)
 ## What happens in the sim
 
 - **The AV** (any of the 7 cars, with a voxel lidar/camera roof kit) drives a loop of about 3 km:
-  - **City streets:** protected left turns, right turns across busy crosswalks, a **road-works lane closure** where it has to merge, and three passes under the viaduct.
+  - **City streets:** left turns (on the green arrow, or on the main green when oncoming traffic leaves a gap), right turns across busy crosswalks, a **road-works lane closure** where it has to merge, and three passes under the viaduct.
   - **Expressway:** out of town on north_st and off at the west loop ramp, which climbs through the gap between the street and the flyover and merges into flyover traffic at 22 m. Across the city past the curved-ramp junctions (one exit, one merge), then off at the east loop ramp, back down to north_st and into the city.
-- **Traffic**: about 76 ground vehicles and about 72 on the elevated roads (the viaduct, the flyover and the ramps, which merge zipper-style). They use IDM car-following, obey 4-phase signals (protected lefts, pedestrian walk phases), don't block the box, yield to pedestrians, and make gap-accepting lane changes. Some drivers are courteous and let a waiting merger in. On the expressway, cars overtake slower traffic on the left and then move back right.
+- **Traffic**: about 76 ground vehicles and about 72 on the elevated roads (the viaduct, the flyover and the ramps, which merge zipper-style: each pair agrees early who goes first, and the other eases back in good time instead of braking at the join). They use IDM car-following, obey 4-phase signals (a left-turn arrow plus permissive lefts on the main green, pedestrian walk phases), don't block the box, yield to pedestrians, and make gap-accepting lane changes. Some drivers are courteous and let a waiting merger in. On the expressway, cars overtake slower traffic on the left and then move back right.
+- **Left turns** work like real protected-permissive signals. During the 5 s arrow the turn is protected. On the main green a left-turner may still go, giving way to oncoming traffic: it turns only if it can clear the oncoming lanes, with a margin, before the next oncoming car arrives (and before the cross street gets its green). The first car in line pulls into the junction to wait for a gap and finishes its turn when the light changes. A car that is already too close to stop short of another car's path keeps going, and everyone else waits for it. The AV follows the same rules, with a bigger margin, and shows `GIVE WAY` while it waits.
 - **Pedestrians**: about 90 pedestrians walk the sidewalk graph, wait for WALK and cross at zebra crossings. Some **jaywalk** mid-block. "Hoppers" cross Crossy-Road style in discrete hops and sometimes freeze mid-road, which is what makes them hard to predict. A scenario director keeps sending jaywalkers into the AV's path.
 - **Accidents**: drivers make the mistakes real drivers make:
   - a distracted driver stops watching the car ahead (rear-end)
@@ -35,11 +36,11 @@ npm run dev        # http://localhost:5173  (simulator)
 
   Drivers at fault still brake hard for the AV, and each of those cases is logged as a near miss. The default rate is about 0.8 incidents per minute, biased toward the AV's route.
 - **The AV's "thoughts"** are drawn in the scene:
-  - its planned path (green = go, amber = caution or merge, red = yield or stop)
+  - its planned path (green = go, amber = caution, merge or giving way, red = yield or stop)
   - multi-hypothesis pedestrian forecasts (dashed: cyan = walking on, amber = may cross, red = conflicts with the AV)
   - a ring around the pedestrian it is yielding to
   - a lidar sweep
-- **HUD**: speed, decision (`CRUISE / FOLLOW / TURN / MERGE / CAUTION / YIELD / STOP · SIGNAL / AVOID · CRASH`), the reason, the yield target with TTC and probability, safety counters (yields, signal stops, merges, traffic accidents, AV crash detours and re-routes, closest pedestrian clearance while the AV is moving, **pedestrian collisions**), and a minimap that also shows the flyover, the ramps and wrecks.
+- **HUD**: speed, decision (`CRUISE / FOLLOW / TURN / MERGE / CAUTION / GIVE WAY / YIELD / STOP · SIGNAL / AVOID · CRASH`), the reason, the yield target with TTC and probability, safety counters (yields, signal stops, merges, traffic accidents, AV crash detours and re-routes, closest pedestrian clearance while the AV is moving, **pedestrian collisions**), and a minimap that also shows the flyover, the ramps and wrecks.
 
 | Key | Action |
 | --- | --- |

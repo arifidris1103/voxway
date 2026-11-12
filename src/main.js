@@ -202,15 +202,69 @@ function setEgoCar(i) {
   hud.toast('AV car: ' + (assets[key].meta.label || key));
 }
 
+// ------------------------------------------------------------------ smooth drawing
+// The simulation runs in fixed 1/60 s steps, so a seeded run replays exactly. But a screen rarely
+// shows exactly one step per frame: at 50 fps it would get 1, 1, 2, 1, 1, 2... steps a frame, and
+// the cars would judder against the smoothly following camera, most visibly at highway speed.
+// So each frame draws the vehicles (and aims the camera) between their last two steps, `alpha` of
+// the way, and puts the real positions back before the next step, so the simulation never sees it.
+const drawn = new WeakMap();         // vehicle object -> its transform before the latest step
+const view = { x: 0, y: 0, z: 0, heading: 0 };   // where the AV is drawn this frame
+let egoPrev = null, touched = [];
+const lerpAngle = (a, b, t) => a + Math.atan2(Math.sin(b - a), Math.cos(b - a)) * t;
+const grab = (o, out = new Array(6)) => {
+  out[0] = o.position.x; out[1] = o.position.y; out[2] = o.position.z;
+  out[3] = o.rotation.x; out[4] = o.rotation.y; out[5] = o.rotation.z;
+  return out;
+};
+
+/** Put back the real transforms (after drawing in-between ones). */
+function restoreDrawn() {
+  for (const [o, c] of touched) { o.position.set(c[0], c[1], c[2]); o.rotation.set(c[3], c[4], c[5]); }
+  touched = [];
+}
+
+/** Before a step: remember where everything was. */
+function rememberPrev() {
+  for (const v of traffic.vehicles) {
+    const d = drawn.get(v.obj);
+    if (d) grab(v.obj, d); else drawn.set(v.obj, grab(v.obj));
+  }
+  egoPrev = { x: ego.pose.x, y: ego.pose.y, z: ego.pose.z, heading: ego.pose.heading, obj: ego.obj };
+}
+
+/** Draw every vehicle `alpha` of the way from its previous step to its latest one. */
+function drawBetween(alpha) {
+  touched = [];
+  for (const v of traffic.vehicles) {
+    const o = v.obj, p = drawn.get(o);
+    if (!p || alpha >= 1) continue;
+    const c = grab(o);
+    if (Math.abs(c[0] - p[0]) + Math.abs(c[2] - p[2]) > 10) continue;          // teleported
+    touched.push([o, c]);
+    o.position.set(p[0] + (c[0] - p[0]) * alpha, p[1] + (c[1] - p[1]) * alpha, p[2] + (c[2] - p[2]) * alpha);
+    o.rotation.set(lerpAngle(p[3], c[3], alpha), lerpAngle(p[4], c[4], alpha), lerpAngle(p[5], c[5], alpha));
+  }
+  const e = ego.pose;
+  const q = egoPrev && egoPrev.obj === ego.obj && Math.abs(egoPrev.x - e.x) + Math.abs(egoPrev.z - e.z) < 10 ? egoPrev : e;
+  view.x = q.x + (e.x - q.x) * alpha;
+  view.y = q.y + (e.y - q.y) * alpha;
+  view.z = q.z + (e.z - q.z) * alpha;
+  view.heading = lerpAngle(q.heading, e.heading, alpha);
+  // the planned path and predictions are drawn from the latest step: keep them with the car
+  const g = planner.viz.group;
+  g.position.set(view.x - e.x, view.y - e.y, view.z - e.z);
+}
+
 // ------------------------------------------------------------------ camera
 function egoFrame() {
-  const h = ego.pose.heading;
-  return { x: ego.pose.x, y: ego.pose.y, z: ego.pose.z, fx: Math.sin(h), fz: Math.cos(h) };
+  const h = view.heading;
+  return { x: view.x, y: view.y, z: view.z, fx: Math.sin(h), fz: Math.cos(h) };
 }
 
 function cameraGoal(mode, dt) {
   const e = egoFrame();
-  let d = camHeading - ego.pose.heading;
+  let d = camHeading - view.heading;
   d = Math.atan2(Math.sin(d), Math.cos(d));
   camHeading -= d * (1 - Math.exp(-dt * 2.2));
   const fx = Math.sin(camHeading), fz = Math.cos(camHeading);
@@ -242,6 +296,7 @@ function cameraGoal(mode, dt) {
 }
 
 function snapCamera() {
+  Object.assign(view, { x: ego.pose.x, y: ego.pose.y, z: ego.pose.z, heading: ego.pose.heading });
   camHeading = ego.pose.heading;
   const g = cameraGoal(CAMS[camIdx], 0);
   if (g) { camera.position.copy(g.pos); camLook.copy(g.look); camera.lookAt(camLook); }
@@ -251,7 +306,7 @@ function updateCamera(dt) {
   const mode = CAMS[camIdx];
   controls.enabled = mode === 'free';
   if (mode === 'free') {
-    controls.target.lerp(new THREE.Vector3(ego.pose.x, ego.pose.y, ego.pose.z), 1 - Math.exp(-dt * 4));
+    controls.target.lerp(new THREE.Vector3(view.x, view.y, view.z), 1 - Math.exp(-dt * 4));
     controls.update();
     return;
   }
@@ -282,33 +337,49 @@ function setNight(on) {
 
 // ------------------------------------------------------------------ loop
 function step(dt) {
+  restoreDrawn();
+  rememberPrev();
   peds.focus.set(camera.position.x, 0, camera.position.z);     // only decides who gets drawn
   S.step(dt);
+}
+
+// The shadow map covers a square around the AV that moves with it. Moving it by less than one
+// shadow-map texel makes every shadow edge shimmer, so it moves in whole texels.
+const SHADOW_X = new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), SUN_DIR).normalize();
+const SHADOW_Y = new THREE.Vector3().crossVectors(SUN_DIR, SHADOW_X);
+const SHADOW_TEXEL = (2 * SH) / sun.shadow.mapSize.x;
+function snapToShadowTexel(f) {
+  const a = f.dot(SHADOW_X), b = f.dot(SHADOW_Y);
+  f.addScaledVector(SHADOW_X, Math.round(a / SHADOW_TEXEL) * SHADOW_TEXEL - a);
+  f.addScaledVector(SHADOW_Y, Math.round(b / SHADOW_TEXEL) * SHADOW_TEXEL - b);
 }
 
 const clock = new THREE.Clock();
 function loop() {
   requestAnimationFrame(loop);
   const dt = Math.min(clock.getDelta(), 1 / 20);
-  // fixed time step, so a seeded run replays exactly: one step per frame on a 60 Hz screen,
-  // two on a slow frame, one every other frame at 120 Hz
+  // fixed time step, so a seeded run replays exactly; the frame is drawn between the last two
+  // steps (see drawBetween), so motion stays even whatever the screen's frame rate
+  restoreDrawn();
   if (!paused) {
     stepAcc += dt;
-    const n = Math.min(4, Math.round(stepAcc / STEP));
-    for (let i = 0; i < n; i++) step(STEP);
-    stepAcc -= n * STEP;
+    let n = 0;
+    while (stepAcc >= STEP && n < 4) { step(STEP); stepAcc -= STEP; n++; }
+    if (n === 4) stepAcc = Math.min(stepAcc, STEP);                 // far behind: don't spiral
   }
+  drawBetween(Math.min(1, stepAcc / STEP));
   updateSignalVisuals(world.signals, S.time);
   if ((lodClock -= dt) <= 0) { lodClock = 0.25; world.instancer.updateLod(camera.position); }
   if (kit) kit.userData.parts.lidar.rotation.z += dt * 14;
   updateCamera(dt);
 
   // follow the ego with the shadow frustum
-  const f = new THREE.Vector3(ego.pose.x, 0, ego.pose.z);
+  const f = new THREE.Vector3(view.x, 0, view.z);
   if (CAMS[camIdx] === 'overview') f.set(0, 0, 40);
   if (CAMS[camIdx] === 'interchange') f.set(-10, 0, -95);
   const lastWreck = incidents.wrecks[incidents.wrecks.length - 1];
   if (CAMS[camIdx] === 'incident' && lastWreck) f.set(lastWreck.pose.x, 0, lastWreck.pose.z);
+  snapToShadowTexel(f);
   sun.target.position.copy(f);
   sun.position.copy(f).addScaledVector(SUN_DIR, 200);
   // fade the expressway when the AV drives underneath it (under the viaduct and the ramps beside
@@ -323,9 +394,9 @@ function loop() {
     m.material.depthWrite = m.material.opacity > 0.95;
   }
   if (night) {
-    const h = ego.pose.heading;
-    headlight.position.set(ego.pose.x + Math.sin(h) * 2, ego.pose.y + 1.0, ego.pose.z + Math.cos(h) * 2);
-    headlight.target.position.set(ego.pose.x + Math.sin(h) * 20, ego.pose.y, ego.pose.z + Math.cos(h) * 20);
+    const h = view.heading;
+    headlight.position.set(view.x + Math.sin(h) * 2, view.y + 1.0, view.z + Math.cos(h) * 2);
+    headlight.target.position.set(view.x + Math.sin(h) * 20, view.y, view.z + Math.cos(h) * 20);
   }
   hud.update(dt, { ego, planner, traffic, peds, camMode: CAMS[camIdx], carLabel: ego.asset.meta.label, paused, seed: S.seed });
   renderer.render(scene, camera);
