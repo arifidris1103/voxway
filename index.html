@@ -4,87 +4,58 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Voxel AV Sim</title>
-  <style>
-    :root {
-      --panel: rgba(13, 17, 23, 0.78);
-      --line: rgba(255, 255, 255, 0.08);
-      --ink: #eef2f6;
-      --muted: #97a3b3;
-      --cyan: #4fd1ff;
-    }
-    * { box-sizing: border-box; }
-    html, body { margin: 0; height: 100%; overflow: hidden; background: #9fc0de; color: var(--ink);
-      font: 13px/1.35 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
-    canvas#view { display: block; position: fixed; inset: 0; width: 100%; height: 100%; }
-    .panel { position: fixed; background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
-      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
-    #brand { top: 14px; left: 14px; padding: 12px 14px; max-width: 340px; }
-    #brand h1 { margin: 0; font-size: 17px; letter-spacing: .06em; }
-    #brand h1 span { color: var(--cyan); }
-    #brand p { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
-    #av { top: 14px; right: 14px; width: 300px; padding: 12px 14px; }
-    #av .row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
-    #speedbox { font-variant-numeric: tabular-nums; }
-    #speed { font-size: 40px; font-weight: 700; }
-    #speedbox small { color: var(--muted); margin-left: 4px; }
-    #state { padding: 4px 10px; border-radius: 999px; font-weight: 800; letter-spacing: .06em; color: #0b0e12; font-size: 12px; }
-    #reason { color: var(--muted); margin-top: 2px; min-height: 18px; }
-    #target { display: none; margin-top: 8px; padding: 7px 9px; border-radius: 8px; background: rgba(255, 90, 60, 0.16);
-      border: 1px solid rgba(255, 90, 60, 0.4); font-size: 12px; }
-    #target.on { display: block; }
-    #stats { margin-top: 10px; display: grid; gap: 3px; font-size: 12px; }
-    #stats div { display: flex; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 3px; }
-    #stats span { color: var(--muted); }
-    #meta { margin-top: 8px; font-size: 11px; color: var(--muted); }
-    #meta b { color: var(--ink); font-weight: 600; }
-    #keys { bottom: 14px; left: 14px; padding: 9px 12px; font-size: 12px; color: var(--muted); max-width: 560px; }
-    #keys kbd { display: inline-block; min-width: 18px; text-align: center; padding: 1px 5px; margin: 0 2px; border-radius: 5px;
-      background: rgba(255, 255, 255, 0.1); color: var(--ink); font: 600 11px ui-monospace, monospace; }
-    #keys a { color: var(--cyan); text-decoration: none; }
-    #mapwrap { bottom: 14px; right: 14px; padding: 6px; }
-    #minimap { display: block; width: 200px; height: 200px; border-radius: 8px; }
-    #toast { position: fixed; left: 50%; top: 18px; transform: translate(-50%, -20px); opacity: 0; transition: .25s;
-      padding: 8px 14px; border-radius: 999px; background: var(--panel); border: 1px solid var(--line); pointer-events: none; }
-    #toast.on { opacity: 1; transform: translate(-50%, 0); }
-    #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #9fc0de; color: #18324a;
-      font-weight: 700; letter-spacing: .08em; z-index: 10; transition: opacity .6s; }
-    #loading.done { opacity: 0; pointer-events: none; }
-    @media (max-width: 900px) {
-      #brand { max-width: calc(100vw - 28px); padding: 8px 12px; }
-      #brand p { display: none; }
-      #av { top: auto; bottom: 14px; right: 14px; left: 14px; width: auto; padding: 8px 12px; }
-      #speed { font-size: 28px; }
-      #stats, #meta { display: none; }
-      #keys, #mapwrap { display: none; }
-    }
-  </style>
+  <link rel="stylesheet" href="./src/ui/voxway.css" />
 </head>
 <body>
   <canvas id="view"></canvas>
-  <div id="loading">BUILDING THE CITY…</div>
-  <div id="toast"></div>
-  <section id="brand" class="panel">
-    <h1>VOXEL <span>AV</span> SIM</h1>
-    <p>Crossy Road, flipped: your self-driving car is the one in traffic, and voxel pedestrians hop across in front of it.
-      It has to yield, merge and get through intersections — by predicting pedestrians.</p>
-  </section>
-  <section id="av" class="panel">
-    <div class="row">
+  <div id="loading"><img src="./src/assets/voxway-logo.svg" alt="VOXWAY" width="440" height="81" /><p>Building the city…</p></div>
+  <div id="toast" class="vx md vx-yellow"></div>
+  <h1 id="brand"><img src="./src/assets/voxway-logo.svg" alt="VOXWAY" width="300" height="55" /></h1>
+
+  <section id="av" class="vx">
+    <div class="hud-top">
       <div id="speedbox"><span id="speed">0</span><small>km/h</small></div>
-      <div id="state">CRUISE</div>
+      <div id="state" class="vx sm">CRUISE</div>
     </div>
     <div id="reason"></div>
-    <div id="target"></div>
+    <div id="target" class="vx sm vx-yellow"></div>
     <div id="stats"></div>
-    <div id="meta">Camera <b id="cam"></b> · Car <b id="car"></b> · Seed <b id="seed"></b><br />Predictor <b id="predictor"></b></div>
+    <div id="meta">
+      <div><i>Cam</i><b id="cam"></b><i>Car</i><b id="car"></b></div>
+      <div><i>Seed</i><b id="seed"></b></div>
+      <div><i>Model</i><b id="predictor"></b></div>
+    </div>
   </section>
-  <section id="keys" class="panel">
-    <kbd>C</kbd> camera <kbd>P</kbd> predictions <kbd>N</kbd> night <kbd>1</kbd>–<kbd>7</kbd> AV car <kbd>F</kbd> formula car
-    <kbd>J</kbd> send a jaywalker <kbd>X</kbd> cause an accident <kbd>Space</kbd> pause <kbd>R</kbd> export WOMD scenario
-    <kbd>M</kbd> baseline / your model ·
-    <a href="garage.html">open the voxel garage →</a>
-  </section>
-  <section id="mapwrap" class="panel"><canvas id="minimap" width="400" height="400"></canvas></section>
+
+  <button id="pausebtn" class="vx md btn" type="button" title="Pause menu: all the controls">
+    <span class="pause-icon"></span>Menu<kbd class="vx sm vx-white">Esc</kbd>
+  </button>
+  <section id="mapwrap" class="vx md"><canvas id="minimap" width="400" height="400"></canvas></section>
+
+  <div id="menu" hidden>
+    <div class="menu-card vx" role="dialog" aria-modal="true" aria-labelledby="menu-title">
+      <header class="menu-head">
+        <img id="menu-title" src="./src/assets/paused.svg" alt="PAUSED" width="250" height="53" />
+        <p>Esc or Space to resume</p>
+      </header>
+      <div class="menu-body">
+        <section class="kb-col">
+          <h2>Keyboard</h2>
+          <div id="kb"></div>
+          <p class="kb-note">Yellow keys do something. Hover a control to find its key.</p>
+          <div id="mouse"></div>
+        </section>
+        <section>
+          <h2>Controls</h2>
+          <div id="controls"></div>
+        </section>
+      </div>
+      <footer class="menu-foot">
+        <a class="vx md btn vx-white" href="garage.html">Voxel garage</a>
+        <button id="resume" class="vx md btn vx-yellow" type="button"><span class="play-icon"></span>Resume</button>
+      </footer>
+    </div>
+  </div>
   <script type="module" src="./src/main.js"></script>
 </body>
 </html>

@@ -10,6 +10,7 @@ import { Vehicle, CAR_KEYS } from './sim/Traffic.js';
 import { createSimulation, STEP } from './sim/Simulation.js';
 import { createLearnedPredictor } from './sim/LearnedPredictor.js';
 import { Hud } from './ui/Hud.js';
+import { PauseMenu } from './ui/PauseMenu.js';
 
 const params = new URLSearchParams(location.search);
 
@@ -61,7 +62,7 @@ scene.add(sun, sun.target);
 const SUN_DIR = new THREE.Vector3(-0.55, 1, 0.42).normalize();
 
 // ------------------------------------------------------------------- state
-let S, net, world, traffic, peds, ego, planner, recorder, hud, kit, assets, headlight, incidents, learned = null;
+let S, net, world, traffic, peds, ego, planner, recorder, hud, menu, kit, assets, headlight, incidents, learned = null;
 let paused = false, night = false, camIdx = 0, lodClock = 0, stepAcc = 0;
 const CAMS = ['chase', 'iso', 'overview', 'interchange', 'incident', 'hood', 'free'];
 const controls = new OrbitControls(camera, canvas);
@@ -87,6 +88,8 @@ async function main() {
   ({ net, world, traffic, peds, ego, planner, recorder, incidents, assets } = S);
   attachKit();
   hud = new Hud(document.body);
+  menu = new PauseMenu(document.body, { onResume: () => setPaused(false) });
+  document.getElementById('pausebtn').addEventListener('click', (e) => { e.currentTarget.blur(); setPaused(true); });
   S.onRespawn = () => {
     snapCamera();
     hud.toast('AV reached the edge of the map — restarting its loop');
@@ -403,6 +406,12 @@ function loop() {
 }
 
 // ------------------------------------------------------------------ input
+/** Pause the simulation and show the pause menu (all the controls are listed there). */
+function setPaused(on) {
+  paused = on;
+  menu?.show(on);
+}
+
 addEventListener('resize', () => {
   camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
@@ -420,7 +429,7 @@ addEventListener('keydown', (e) => {
     const ok = incidents.trigger(hwy ? 'speeding' : null, aheadOfEgo(), incidents.egoLanes(ego));
     hud.toast(!ok ? 'No suitable traffic nearby — try again' : hwy ? 'A speeding driver is weaving through traffic…' : 'A driver ahead just made a mistake…');
   }
-  else if (k === ' ') { paused = !paused; e.preventDefault(); }
+  else if (k === ' ' || k === 'escape') { setPaused(!paused); e.preventDefault(); }
   else if (k === 'j') {
     const q = planner.path && planner.path[Math.min(planner.path.length - 1, 40)];
     if (q && peds.forceJaywalk(q)) hud.toast('A pedestrian is about to cross…'); else hud.toast('No sidewalk nearby');

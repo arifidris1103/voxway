@@ -5,7 +5,11 @@ import { LAYOUT, roadHalfWidth } from '../world/RoadNetwork.js';
 const BADGE = {
   CRUISE: '#34e3a0', FOLLOW: '#7cc4ff', TURN: '#7cc4ff', MERGE: '#ffb02e', CAUTION: '#ffb02e',
   YIELD: '#ff5a3c', 'STOP · SIGNAL': '#ff5a3c', 'AVOID · CRASH': '#c061ff', 'GIVE WAY': '#ffb02e',
+  PAUSED: '#ffc62e',
 };
+
+const group = (title, rows) => `<div class="group"><h3>${title}</h3>${rows.map(([k, v, cls]) =>
+  `<div class="stat${cls ? ' ' + cls : ''}"><span>${k}</span><b>${v}</b></div>`).join('')}</div>`;
 
 export class Hud {
   constructor(root) {
@@ -38,8 +42,8 @@ export class Hud {
     this.el.speed.textContent = Math.round(ego.v * 3.6);
     const st = paused ? 'PAUSED' : planner.state;
     this.el.state.textContent = st;
-    this.el.state.style.background = BADGE[st] || '#8a93a0';
-    this.el.reason.textContent = paused ? 'space to resume' : (ego.reason || '') + (ego.pose.y > 2 ? ` · expressway, ${Math.round(ego.pose.y)} m up` : '');
+    this.el.state.style.setProperty('--badge', BADGE[st] || '#8a93a0');
+    this.el.reason.textContent = paused ? 'esc or space to resume' : (ego.reason || '') + (ego.pose.y > 2 ? ` · expressway, ${Math.round(ego.pose.y)} m up` : '');
     const t = planner.target;
     if (t) {
       const ttc = t.d / Math.max(ego.v, 0.5);
@@ -47,18 +51,21 @@ export class Hud {
       this.el.target.classList.add('on');
     } else this.el.target.classList.remove('on');
     const S = planner.stats;
-    this.el.stats.innerHTML = [
+    const html = group('Safety', [
       ['Pedestrian yields', S.pedYields],
+      ['Closest pedestrian (AV moving)', isFinite(S.minPedGap) ? Math.max(0, S.minPedGap).toFixed(1) + ' m' : '—'],
+      ['Pedestrian collisions', S.collisions, S.collisions > 0 ? 'bad' : ''],
+      ['Jaywalkers seen', peds.stats.jaywalks],
+    ]) + group('Traffic', [
       ['Signal stops', S.redStops],
       ['Merges', S.merges],
-      ['Jaywalkers seen', peds.stats.jaywalks],
       ['Traffic accidents', traffic.incidents ? traffic.incidents.stats.collisions : 0],
       ['AV crash detours / re-routes', `${S.crashScenes} / ${S.reroutes}`],
-      ['Closest pedestrian (AV moving)', isFinite(S.minPedGap) ? Math.max(0, S.minPedGap).toFixed(1) + ' m' : '—'],
-      ['Pedestrian collisions', S.collisions],
+    ]) + group('Trip', [
       ['Distance', (S.distance / 1000).toFixed(2) + ' km'],
       ['Agents', `${traffic.vehicles.length} cars · ${peds.peds.length} peds`],
-    ].map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join('');
+    ]);
+    if (html !== this.statsHtml) { this.el.stats.innerHTML = html; this.statsHtml = html; }
     this.el.cam.textContent = camMode;
     this.el.car.textContent = carLabel;
     if (this.el.seed) this.el.seed.textContent = seed ?? '—';
@@ -76,7 +83,7 @@ export class Hud {
     const R = 260, k = W / (2 * R);                      // follows the AV
     const X = (x) => (x - ego.pose.x + R) * k, Z = (z) => (z - ego.pose.z + R) * k;
     c.clearRect(0, 0, W, H);
-    c.fillStyle = 'rgba(14,18,24,0.82)';
+    c.fillStyle = '#161d28';
     c.fillRect(0, 0, W, H);
     c.fillStyle = '#3a414c';
     for (const a of LAYOUT.avenues) { const hw = roadHalfWidth(a); c.fillRect(X(a.x - hw), 0, hw * 2 * k, H); }
@@ -115,8 +122,11 @@ export class Hud {
     c.save();
     c.translate(X(ego.pose.x), Z(ego.pose.z));
     c.rotate(-h);
-    c.fillStyle = '#4fd1ff';
-    c.beginPath(); c.moveTo(0, 6); c.lineTo(-4, -4); c.lineTo(4, -4); c.closePath(); c.fill();
+    c.fillStyle = '#ffc62e';                            // VOXWAY yellow, outlined in ink
+    c.strokeStyle = '#141a23';
+    c.lineWidth = 2;
+    c.lineJoin = 'round';
+    c.beginPath(); c.moveTo(0, 8); c.lineTo(-5.5, -5); c.lineTo(5.5, -5); c.closePath(); c.stroke(); c.fill();
     c.restore();
   }
 }
