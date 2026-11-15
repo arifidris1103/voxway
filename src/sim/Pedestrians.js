@@ -240,7 +240,7 @@ export class Pedestrians {
     for (const p of this.roadPeds) {
       const pr = lane.project(p.pos.x, p.pos.z);
       if (pr.s < sFrom - 0.5 || pr.s > lane.length) continue;
-      if (Math.abs(pr.d) > veh.width / 2 + 0.75) continue;
+      if (pr.dist > veh.width / 2 + 0.75) continue;          // true distance (see Incidents.blocking)
       if (!best || pr.s < best.s) best = { s: pr.s, ped: p };
     }
     return best;
@@ -492,6 +492,7 @@ export class Pedestrians {
         animSpeed = p.speed * 0.8;
         p.y = 0.16;
       } else if (p.state === 'work') {
+        this.roadPeds.push(p);                    // a worker stands in the closed lane: any car in it stops
         anim = 'idle';
         p.timer -= dt;
         if (p.timer <= 0) { p.timer = rand(2, 6); p.heading += rand(-1.5, 1.5); }

@@ -97,6 +97,20 @@ function joinShared(A, B) {
   return back;
 }
 
+/**
+ * Is lane `l` closed for road works anywhere from `s` (arc length on l) to `ahead` metres further,
+ * following it onto the next pieces? A closure counts from the start of its taper.
+ */
+function closedNear(l, s, ahead) {
+  for (let d = -s; l && d < ahead; ) {
+    const c = l.closed;
+    if (c && d + c.s1 > 0 && d + c.s0 - c.taper < ahead) return true;
+    d += l.length;
+    l = l.next.find((x) => x.kind !== 'ramp' && x.kind !== 'connector') || null;
+  }
+  return false;
+}
+
 /** Does a ramp join this lane within `dist` metres (counted from the start of the lane)? */
 function mergeAhead(lane, dist) {
   let d = 0;
@@ -770,6 +784,7 @@ export class Traffic {
 
   /** Try a lane change into `target` (adjacent, parallel). */
   tryLaneChange(veh, target, urgent, relaxed = false) {
+    if (closedNear(target, veh.s, 60)) return false;      // never into road works (people work there)
     const list = this.occ.get(target) || [];
     let lead = null, foll = null;
     for (const e of list) {
@@ -834,7 +849,8 @@ export class Traffic {
     veh.avoiding = false;
     const blk = this.incidents && this.incidents.blocking(lane, veh.s, veh.width);
     if (blk && blk.s - veh.s < 150) {
-      const free = (l) => l && !this.incidents.blocking(l, Math.max(0, veh.s - 5), veh.width);
+      const free = (l) => l && !closedNear(l, veh.s, blk.s - veh.s + 30) &&
+        !this.incidents.blocking(l, Math.max(0, veh.s - 5), veh.width);
       target = free(lane.left) ? lane.left : free(lane.right) ? lane.right : null;
       if (target) {
         veh.avoiding = true;

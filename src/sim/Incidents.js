@@ -434,7 +434,10 @@ export class Incidents {
       if (pr.s < sFrom - 1 || pr.s > lane.length + 2) continue;
       if (Math.abs(v.pose.y - (lane.yProfile ? lane.yProfile(pr.s / lane.length) : lane.y)) > 3) continue;  // other level
       const reach = Math.max(v.width, v.length * 0.75) / 2 + width / 2 + 0.4;
-      if (Math.abs(pr.d) > reach) continue;
+      // true distance to the lane, not just the sideways offset: past either end of the lane the
+      // projection sticks to the end point, and a wreck far behind (or far beyond) a lane but in line
+      // with it would otherwise look as if it sat right on it
+      if (pr.dist > reach) continue;
       const s = pr.s - v.length / 2;
       if (!best || s < best.s) best = { s, veh: v };
     }
