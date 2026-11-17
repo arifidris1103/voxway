@@ -155,8 +155,10 @@ async function main() {
     for (let i = 0; i < (+params.get('then') || 0) * 30; i++) step(1 / 30);
   }
   if (params.has('crash')) {
-    // demo: keep trying until a faulty driver turns into a collision in view
-    for (let k = 0; k < 40 && incidents.stats.collisions === 0; k++) {
+    // demo: keep trying until a faulty driver turns into a collision in view (count from now: a
+    // random accident during ?warm or ?until has already happened and isn't the one we want)
+    const before = incidents.stats.collisions;
+    for (let k = 0; k < 40 && incidents.stats.collisions === before; k++) {
       incidents.trigger(params.get('crash') === '1' ? 'distracted' : params.get('crash'), aheadOfEgo(), incidents.egoLanes(ego));
       for (let i = 0; i < 90; i++) step(1 / 30);
     }
